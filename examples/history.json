@@ -1,0 +1,40 @@
+{
+  "nodes": [
+    {
+      "id": "release",
+      "label": "Ship charts + diagrams",
+      "parents": [
+        "main",
+        "feature"
+      ],
+      "marks": [
+        "v1.0"
+      ]
+    },
+    {
+      "id": "feature",
+      "label": "Add text renderers",
+      "parents": [
+        "base"
+      ],
+      "marks": [
+        "skills"
+      ]
+    },
+    {
+      "id": "main",
+      "label": "Refine the API",
+      "parents": [
+        "base"
+      ],
+      "marks": [
+        "main"
+      ]
+    },
+    {
+      "id": "base",
+      "label": "Start with glyphcss",
+      "parents": []
+    }
+  ]
+}

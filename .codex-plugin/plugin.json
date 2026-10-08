@@ -1,0 +1,39 @@
+{
+  "name": "glyphcss-diagrams",
+  "description": "Render charts, flowcharts, sequences, and branching histories as readable text directly in chat or a terminal.",
+  "version": "0.1.0",
+  "author": {
+    "name": "apresmoi",
+    "url": "https://github.com/apresmoi"
+  },
+  "homepage": "https://github.com/apresmoi/glyphcss-diagrams",
+  "repository": "https://github.com/apresmoi/glyphcss-diagrams",
+  "license": "MIT",
+  "keywords": [
+    "charts",
+    "diagrams",
+    "mermaid",
+    "ascii",
+    "terminal",
+    "visualization"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Glyphcss diagrams & charts",
+    "shortDescription": "Text charts and diagrams in your chat",
+    "longDescription": "Render charts, flowcharts, sequences, and branching histories as readable text directly in chat or a terminal. Two focused skills share self-contained Node.js renderers from the open-source Glyphcss libraries. Automatic text budgets keep output compact; render reports catch data or connection loss.",
+    "developerName": "apresmoi",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/apresmoi/glyphcss-diagrams",
+    "defaultPrompt": [
+      "Draw this workflow directly in chat.",
+      "Chart these values and explain the trend."
+    ],
+    "logo": "./assets/icon.png",
+    "composerIcon": "./assets/icon.png"
+  }
+}

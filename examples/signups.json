@@ -1,0 +1,54 @@
+{
+  "title": "Weekly signups",
+  "axes": {
+    "x": {
+      "title": "Week"
+    },
+    "y": {
+      "title": "Signups"
+    }
+  },
+  "marks": [
+    {
+      "type": "line",
+      "data": [
+        {
+          "week": 1,
+          "signups": 14
+        },
+        {
+          "week": 2,
+          "signups": 22
+        },
+        {
+          "week": 3,
+          "signups": 18
+        },
+        {
+          "week": 4,
+          "signups": 31
+        },
+        {
+          "week": 5,
+          "signups": 28
+        },
+        {
+          "week": 6,
+          "signups": 44
+        },
+        {
+          "week": 7,
+          "signups": 51
+        },
+        {
+          "week": 8,
+          "signups": 47
+        }
+      ],
+      "channels": {
+        "x": "week",
+        "y": "signups"
+      }
+    }
+  ]
+}

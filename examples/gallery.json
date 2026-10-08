@@ -1,0 +1,57 @@
+[
+  {
+    "id": "trend",
+    "skill": "charts",
+    "source": "signups.json",
+    "width": 58,
+    "height": 16,
+    "label": "Braille trends",
+    "description": "Ordered values, smooth lines, readable axes."
+  },
+  {
+    "id": "bars",
+    "skill": "charts",
+    "source": "regions.json",
+    "width": 48,
+    "height": 14,
+    "label": "Category comparisons",
+    "description": "Keep values and units in view."
+  },
+  {
+    "id": "flows",
+    "skill": "charts",
+    "source": "traffic.json",
+    "width": 58,
+    "height": 22,
+    "label": "Flows and proportions",
+    "description": "Sankey flows with the original quantities."
+  },
+  {
+    "id": "workflow",
+    "skill": "diagrams",
+    "source": "delivery.mmd",
+    "width": 48,
+    "height": 20,
+    "label": "Decisions and loops",
+    "description": "Mermaid becomes a diagram in the conversation."
+  },
+  {
+    "id": "sequence",
+    "skill": "diagrams",
+    "source": "conversation.mmd",
+    "width": 58,
+    "height": 18,
+    "label": "Message sequences",
+    "description": "Participants, requests, replies, and ordering."
+  },
+  {
+    "id": "history",
+    "skill": "diagrams",
+    "source": "history.json",
+    "width": 58,
+    "height": 16,
+    "kind": "lanes",
+    "label": "Branches and merges",
+    "description": "Show how parallel work comes together."
+  }
+]

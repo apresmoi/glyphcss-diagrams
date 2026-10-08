@@ -1,0 +1,8 @@
+sequenceDiagram
+  participant User
+  participant Agent
+  participant Renderer
+  User->>Agent: Show the trend
+  Agent->>Renderer: Data + budget
+  Renderer-->>Agent: Text chart
+  Agent-->>User: Inline reply

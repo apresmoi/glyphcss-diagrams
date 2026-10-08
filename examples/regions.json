@@ -1,0 +1,31 @@
+{
+  "title": "Requests by region",
+  "axes": {
+    "y": {
+      "title": "Requests (k)"
+    }
+  },
+  "marks": [
+    {
+      "type": "bar",
+      "data": [
+        {
+          "region": "EU",
+          "requests": 42
+        },
+        {
+          "region": "US",
+          "requests": 35
+        },
+        {
+          "region": "APAC",
+          "requests": 28
+        }
+      ],
+      "channels": {
+        "x": "region",
+        "y": "requests"
+      }
+    }
+  ]
+}

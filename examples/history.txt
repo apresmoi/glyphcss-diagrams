@@ -1,0 +1,6 @@
+       *   release  (v1.0)  Ship charts + diagrams
+       ├─╮
+       │ * feature  (skills)  Add text renderers
+       * │ main  (main)  Refine the API
+       * │ base  Start with glyphcss
+       ╰─╯

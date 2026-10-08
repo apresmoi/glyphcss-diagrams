@@ -1,0 +1,16 @@
+{
+  "name": "glyphcss-diagrams",
+  "owner": {
+    "name": "apresmoi",
+    "url": "https://github.com/apresmoi"
+  },
+  "metadata": {
+    "description": "Render charts, flowcharts, sequences, and branching histories as readable text directly in chat or a terminal."
+  },
+  "plugins": [
+    {
+      "name": "glyphcss-diagrams",
+      "source": "./"
+    }
+  ]
+}

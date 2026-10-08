@@ -1,0 +1,61 @@
+{
+  "name": "glyphcss-diagrams",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node skills/runtime/build.mjs",
+    "test": "npm run validate:package && node --test skills/runtime/runtime.test.mjs scripts/install.test.mjs scripts/package.test.mjs",
+    "test:install": "node --test scripts/install.test.mjs scripts/package.test.mjs",
+    "validate:package": "node scripts/validate-package.mjs",
+    "install:skills": "node install.mjs",
+    "uninstall:skills": "node uninstall.mjs",
+    "gallery": "node scripts/render-gallery.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "sharp": "^0.35.5"
+  },
+  "license": "MIT",
+  "version": "0.1.0",
+  "description": "Render charts, flowcharts, sequences, and branching histories as readable text directly in chat or a terminal.",
+  "author": {
+    "name": "apresmoi",
+    "url": "https://github.com/apresmoi"
+  },
+  "homepage": "https://github.com/apresmoi/glyphcss-diagrams",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apresmoi/glyphcss-diagrams.git"
+  },
+  "keywords": [
+    "charts",
+    "diagrams",
+    "mermaid",
+    "ascii",
+    "terminal",
+    "visualization",
+    "pi-package"
+  ],
+  "pi": {
+    "skills": [
+      "./skills/glyphcss-charts",
+      "./skills/glyphcss-diagrams"
+    ]
+  },
+  "files": [
+    ".claude-plugin/",
+    ".codex-plugin/",
+    ".agents/plugins/",
+    ".factory-plugin/",
+    "skills/glyphcss-charts/",
+    "skills/glyphcss-diagrams/",
+    "assets/",
+    "docs/installation.md",
+    "install.mjs",
+    "uninstall.mjs",
+    "scripts/manage-skills.mjs"
+  ]
+}

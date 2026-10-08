@@ -1,0 +1,35 @@
+{
+  "title": "From visits to signups",
+  "marks": [
+    {
+      "type": "sankey",
+      "data": [
+        {
+          "from": "Search",
+          "to": "Site",
+          "value": 48
+        },
+        {
+          "from": "Social",
+          "to": "Site",
+          "value": 24
+        },
+        {
+          "from": "Site",
+          "to": "Read",
+          "value": 54
+        },
+        {
+          "from": "Site",
+          "to": "Signup",
+          "value": 18
+        }
+      ],
+      "channels": {
+        "source": "from",
+        "target": "to",
+        "value": "value"
+      }
+    }
+  ]
+}
