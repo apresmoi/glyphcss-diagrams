@@ -75,18 +75,34 @@ function card(item, x, y, width, height, p) {
     + text(`examples/${item.source}`, x + 26, y + height - 27, 12, p.muted);
 }
 
+const trend = rendered.get('trend');
+const signups = JSON.parse(await readFile(join(examples, trend.source), 'utf8'))
+  .marks[0].data.map(row => row.signups);
+
 for (const [theme, p] of Object.entries(palettes)) {
-  const hero = svg(1200, 864, 'Glyphcss diagrams & charts — text that tells the story',
-    `<rect width="1200" height="864" rx="16" fill="${p.bg}"/>`
-    + text('GLYPHCSS / AGENT SKILLS', 44, 52, 15, p.accent, 'letter-spacing="2"')
-    + text('Diagrams & charts.', 40, 136, 61, p.ink, 'font-weight="700" letter-spacing="-2"')
-    + text('Rendered in text. Right in your conversation.', 44, 187, 23, p.muted)
-    + `<line x1="44" y1="222" x2="1156" y2="222" stroke="${p.rule}"/>`
-    + card(rendered.get('trend'), 44, 254, 714, 514, p)
-    + card(rendered.get('workflow'), 782, 254, 374, 514, p)
-    + text('NODE 22+   /   MERMAID + JSON   /   MIT', 44, 817, 13, p.muted, 'letter-spacing="0.5"')
-    + text('powered by glyphcss', 1156, 817, 13, p.accent, 'text-anchor="end"'),
-    'Real output from the Glyphcss text renderers: weekly signups as a braille trend and a delivery workflow with a retry loop. Example data.');
+  const hero = svg(1200, 864, 'Glyphcss diagrams & charts in an agent terminal',
+    `<rect x="1" y="1" width="1198" height="862" rx="16" fill="${p.bg}" stroke="${p.rule}" stroke-width="2"/>`
+    + `<path d="M17 2h1166a15 15 0 0 1 15 15v35H2V17A15 15 0 0 1 17 2Z" fill="${p.panel}"/>`
+    + '<circle cx="30" cy="27" r="6" fill="#ff5f57"/><circle cx="52" cy="27" r="6" fill="#febc2e"/><circle cx="74" cy="27" r="6" fill="#28c840"/>'
+    + text('agent session / glyphcss-diagrams', 600, 33, 15, p.muted, 'text-anchor="middle"')
+    + `<line x1="2" y1="52" x2="1198" y2="52" stroke="${p.rule}"/>`
+    + text('>_', 40, 105, 30, p.accent, 'font-weight="700"')
+    + text('glyphcss', 94, 105, 30, p.ink, 'font-weight="700"')
+    + text('diagrams & charts, right in the conversation', 94, 137, 18, p.muted)
+    + `<rect x="28" y="167" width="1144" height="89" rx="5" fill="${p.panel}"/>`
+    + text('›', 44, 202, 26, p.ink, 'font-weight="700"')
+    + text(`Plot weekly signups: ${signups.join(', ')}.`, 80, 202, 23, p.ink)
+    + text('Show the trend right here.', 80, 235, 23, p.ink)
+    + text('•', 44, 300, 26, p.accent)
+    + text("Here's the weekly trend:", 80, 300, 23, p.ink)
+    + grid(trend, 80, 321, 1040, 416, p, 26)
+    + text(`From ${signups[0]} to ${signups.at(-1)} signups in ${signups.length} weeks.`, 80, 783, 21, p.ink)
+    + `<line x1="28" y1="811" x2="1172" y2="811" stroke="${p.rule}"/>`
+    + text('›', 44, 846, 26, p.accent, 'font-weight="700"')
+    + `<rect x="80" y="826" width="12" height="24" fill="${p.muted}"/>`
+    + text('Ask for a chart or diagram', 108, 845, 18, p.muted)
+    + text('powered by glyphcss', 1156, 845, 14, p.muted, 'text-anchor="end"'),
+    `Illustrative agent conversation: a user asks for weekly signups, and the agent replies with actual braille chart output from the bundled Glyphcss renderer. Example data.\n\n${trend.text}`);
   await writeFile(join(assets, `hero-${theme}.svg`), hero);
   await sharp(Buffer.from(hero)).png().toFile(join(assets, `hero-${theme}.png`));
 }
