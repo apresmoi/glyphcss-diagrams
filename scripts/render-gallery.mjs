@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
@@ -78,6 +79,7 @@ function card(item, x, y, width, height, p) {
 const trend = rendered.get('trend');
 const signups = JSON.parse(await readFile(join(examples, trend.source), 'utf8'))
   .marks[0].data.map(row => row.signups);
+const heroVersions = {};
 
 for (const [theme, p] of Object.entries(palettes)) {
   const hero = svg(1200, 864, 'Glyphcss diagrams & charts in an agent terminal',
@@ -104,8 +106,18 @@ for (const [theme, p] of Object.entries(palettes)) {
     + text('powered by glyphcss', 1156, 845, 14, p.muted, 'text-anchor="end"'),
     `Illustrative agent conversation: a user asks for weekly signups, and the agent replies with actual braille chart output from the bundled Glyphcss renderer. Example data.\n\n${trend.text}`);
   await writeFile(join(assets, `hero-${theme}.svg`), hero);
-  await sharp(Buffer.from(hero)).png().toFile(join(assets, `hero-${theme}.png`));
+  const png = await sharp(Buffer.from(hero)).png().toBuffer();
+  await writeFile(join(assets, `hero-${theme}.png`), png);
+  heroVersions[theme] = createHash('sha256').update(png).digest('hex').slice(0, 12);
 }
+
+// A changed image needs a new URL to bypass cached README banners.
+const readmePath = join(root, 'README.md');
+const readme = await readFile(readmePath, 'utf8');
+await writeFile(readmePath, readme.replace(
+  /assets\/hero-(dark|light)\.png(?:\?v=[a-f0-9]+)?/g,
+  (_, theme) => `assets/hero-${theme}.png?v=${heroVersions[theme]}`,
+));
 
 for (const item of rendered.values()) {
   const p = palettes.dark;
