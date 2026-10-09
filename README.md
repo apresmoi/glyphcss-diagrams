@@ -1,7 +1,7 @@
 <h1>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.png">
-    <img alt="Glyphcss diagrams & charts. Rendered in text. Right in your conversation." src="assets/hero-light.png" width="1200">
+    <img alt="An agent terminal: a user asks for weekly signups, and the agent replies with a Glyphcss braille chart directly in the conversation." src="assets/hero-light.png" width="1200">
   </picture>
 </h1>
 
