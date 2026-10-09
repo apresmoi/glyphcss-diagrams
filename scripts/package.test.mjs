@@ -1,10 +1,20 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { ROOT, SKILLS } from './manage-skills.mjs';
 import { validatePackage } from './validate-package.mjs';
+
+test('README banner URLs change with the image content', () => {
+  const readme = readFileSync(join(ROOT, 'README.md'), 'utf8');
+  for (const theme of ['dark', 'light']) {
+    const asset = `assets/hero-${theme}.png`;
+    const hash = createHash('sha256').update(readFileSync(join(ROOT, asset))).digest('hex').slice(0, 12);
+    assert.ok(readme.includes(`="${asset}?v=${hash}"`), `${theme} banner needs its current content hash in the README URL`);
+  }
+});
 
 test('native manifests and Pi all discover the two shared skills', () => {
   assert.match(validatePackage(), /3 plugin manifests, 3 marketplaces, 2 shared skills/);
