@@ -160,6 +160,24 @@ test('trends and bars start compact and hint a larger size only when the data ou
   assert.match(invalid.diagnostic.error, /--size must be compact, wide, tall, full/u);
 });
 
+test('chat pies label every slice in place: ASCII fills, no legend, and no anonymous slices', () => {
+  const data = [['Chrome', 64], ['Safari', 19], ['Edge', 5], ['Firefox', 3], ['Other', 9]].map(([name, share]) => ({ name, share }));
+  const pie = legend => JSON.stringify({ ...(legend === undefined ? {} : { legend }), marks: [{ type: 'arc', data, channels: { y: 'share', fill: 'name' } }] });
+  // Mutation: drop the skill's `legend: false` default or its `shades` -> red.
+  const chat = success('charts', pie());
+  assert.doesNotMatch(chat.text, /[█░▚╱▌═▓▒]/u);
+  for (const glyph of ['#', '=', '+', ':', '.']) assert.ok(chat.text.includes(glyph), glyph);
+  for (const [name] of data.map(row => [row.name])) assert.equal(chat.text.split(name).length - 1, 1, name);
+  const legend = success('charts', pie(true));
+  assert.equal(legend.text.split('Chrome').length - 1, 2);
+  // Mutation: drop the unlabeled-slice refusal -> red.
+  const thin = run('charts', JSON.stringify({ type: 'arc', data: [{ name: 'Big', v: 97 }, { name: 'Tiny', v: 1 }, { name: 'Rest', v: 2 }], channels: { y: 'v', fill: 'name' } }));
+  assert.equal(thin.status, 1);
+  assert.equal(thin.diagnostic.code, 'GLYPH_SKILL_UNFIT');
+  assert.match(thin.diagnostic.error, /Tiny · 1%/u);
+  assert.equal(run('charts', JSON.stringify({ legend: true, marks: [{ type: 'arc', data: [{ name: 'Big', v: 97 }, { name: 'Tiny', v: 1 }, { name: 'Rest', v: 2 }], channels: { y: 'v', fill: 'name' } }] })).status, 0);
+});
+
 test('a chart file and mark spec render at the explicit narrow size; stdout remains pure text', async () => {
   const input = JSON.stringify({ type: 'bar', data: [{ month: 'Jan', value: 12 }, { month: 'Feb', value: 18 }], channels: { x: 'month', y: 'value' } });
   const file = join(directory, 'chart.json');

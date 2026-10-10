@@ -3,6 +3,11 @@ import { CHART_SIZES, parseJson, runCli } from './common.mjs';
 
 const isTrend = mark => mark?.type === 'line' || mark?.type === 'area';
 const isBar = mark => mark?.type === 'bar';
+const isArc = mark => mark?.type === 'arc';
+// Chat pies: every slice carries its own `name · NN%` callout, so the legend
+// only repeats them, and plain ASCII fills read cleaner than mixed block,
+// line and stripe textures.
+const PIE_SHADES = ['#', '=', '+', ':', '.'];
 const values = (mark, channel) => {
   const field = mark.channels?.[channel];
   if (Array.isArray(field)) return [...new Set(field)];
@@ -50,8 +55,14 @@ await runCli({
     const bars = spec.marks.filter(isBar);
     const options = budgetFor(trends.length || bars.length ? 'compact' : undefined);
     const charset = cli.charset ?? (trends.length ? 'braille' : options.charset);
+    const pie = spec.marks.some(isArc);
+    const chartSpec = pie && spec.legend === undefined ? { ...spec, legend: false } : spec;
     try {
-      return { result: renderGlyphChart(spec, { ...options, charset }), charset, hint: sizeHint(trends, bars, options) };
+      const result = renderGlyphChart(chartSpec, { ...options, charset, ...(pie && { shades: PIE_SHADES }) });
+      // Without a legend a slice that lost its callout is anonymous.
+      const unnamed = chartSpec.legend === false ? result.report.ledger.filter(entry => entry.code === 'label-dropped' && entry.detail?.role === 'pie callout').map(entry => entry.detail.text) : [];
+      if (unnamed.length) throw Object.assign(new Error(`Pie slices without a label: ${unnamed.join(', ')}. Group small slices into one disclosed slice, or use a bar chart.`), { code: 'GLYPH_SKILL_UNFIT' });
+      return { result, charset, hint: sizeHint(trends, bars, options) };
     } catch (error) {
       error.charset = charset;
       throw error;
