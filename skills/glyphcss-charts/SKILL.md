@@ -21,7 +21,8 @@ JSON
 
 ## Fit the destination automatically
 
-- Replying in chat: use the default 72 columns × 24 rows, monochrome. Any `line` or `area` mark selects braille automatically (including bare number arrays); other charts use box characters. Override with `--charset` when requested. Do not use a tool subprocess's terminal size as the chat width. Never ask the user for window dimensions.
+- Replying in chat: output is monochrome. Any `line` or `area` mark selects braille automatically (including bare number arrays); other charts use box characters. Override with `--charset` when requested. Do not use a tool subprocess's terminal size as the chat width. Never ask the user for window dimensions.
+- Size line and area charts from the data with `--size`: `compact` 48×16 (default; up to ~25 x points, one or two series), `wide` 72×16 (more x points, e.g. a month of days or two years of months), `tall` 48×24 (three or more series, or small changes that must stay visible), `full` 72×24 (both). Other charts default to 72×24. If stderr carries a `hint`, rerun once with the size it names.
 - When the host provides a text-cell budget or the user requests one, pass `--width N --height N`. These are character cells, not pixels; the default is a budget, not a claim to have measured a window.
 - Only when writing directly to a real terminal, use `--target terminal`; it reads stdout's terminal dimensions, otherwise falls back to 80×24. Use `--charset ascii` for a strictly ASCII destination.
 

@@ -70,8 +70,8 @@ test('portable charts run without node_modules or creating artifacts, preserve v
   const output = success('charts', '[2,4,3,8]');
   assert.equal(output.kind, 'chart');
   assert.equal(output.meta.values, 4);
-  assert.equal(output.budget.width, 72);
-  assert.equal(output.budget.height, 24);
+  assert.equal(output.budget.width, 48);
+  assert.equal(output.budget.height, 16);
   assert.equal(output.budget.widthSource, 'chat-default');
   assert.equal(output.budget.charset, 'braille');
   assert.match(output.text, /[\u2801-\u28ff]/u);
@@ -113,6 +113,45 @@ test('chat trends select braille across input forms; other charts and explicit o
     assert.equal(failure.diagnostic.budget.charset, args.length ? 'ascii' : 'braille');
     assert.ok(failure.diagnostic.hint);
   }
+});
+
+test('a named size resolves both axes; explicit cells win per axis; terminal ignores the trend default', () => {
+  const tty = { isTTY: true, columns: 121, rows: 42 };
+  assert.deepEqual(resolveBudget({ target: 'chat' }, tty, 'compact'), {
+    width: 48, height: 16, widthSource: 'chat-default', heightSource: 'chat-default', target: 'chat', charset: 'box', size: 'compact',
+  });
+  for (const [size, width, height] of [['compact', 48, 16], ['wide', 72, 16], ['tall', 48, 24], ['full', 72, 24]]) {
+    const budget = resolveBudget({ target: 'chat', size }, tty, 'compact');
+    assert.deepEqual([budget.width, budget.height, budget.widthSource, budget.size], [width, height, 'size', size]);
+  }
+  assert.deepEqual(resolveBudget({ target: 'terminal' }, tty, 'compact').width, 120);
+  assert.equal(resolveBudget({ target: 'terminal', size: 'wide' }, tty).width, 72);
+  const mixed = resolveBudget({ target: 'chat', size: 'wide', height: 20 }, tty);
+  assert.deepEqual([mixed.width, mixed.height, mixed.heightSource], [72, 20, 'explicit']);
+  assert.equal(Object.hasOwn(resolveBudget({ target: 'chat', width: 30, height: 10 }, tty, 'compact'), 'size'), false);
+});
+
+test('trends start compact and hint a larger size only when the data outgrows it; other charts stay full', () => {
+  const series = (n, name) => Array.from({ length: n }, (_, i) => ({ day: `2026-09-${String(i + 1).padStart(2, '0')}`, value: i * 3 + 1, name }));
+  const line = data => JSON.stringify({ marks: [{ type: 'line', data, channels: { x: 'day', y: 'value', stroke: 'name' } }] });
+  const few = run('charts', line(series(13, 'a')));
+  assert.equal(few.status, 0, few.stderr);
+  assert.deepEqual([few.diagnostic.budget.width, few.diagnostic.budget.height], [48, 16]);
+  assert.equal(few.diagnostic.hint, undefined);
+  const many = run('charts', line(series(30, 'a')));
+  assert.match(many.diagnostic.hint, /30 x points.*--size wide/u);
+  const crowded = run('charts', line(['a', 'b', 'c'].flatMap(name => series(10, name))));
+  assert.match(crowded.diagnostic.hint, /3 series.*--size tall/u);
+  const both = run('charts', line(['a', 'b', 'c'].flatMap(name => series(30, name))));
+  assert.match(both.diagnostic.hint, /--size full/u);
+  for (const args of [['--size', 'wide'], ['--width', '48', '--height', '16']]) {
+    assert.equal(run('charts', line(series(30, 'a')), args).diagnostic.hint, undefined);
+  }
+  const bars = success('charts', JSON.stringify({ type: 'bar', data: [3, 5, 2], channels: {} }));
+  assert.deepEqual([bars.budget.width, bars.budget.height, bars.budget.size], [72, 24, undefined]);
+  const invalid = run('charts', '[1,2]', ['--size', 'huge']);
+  assert.equal(invalid.status, 1);
+  assert.match(invalid.diagnostic.error, /--size must be compact, wide, tall, full/u);
 });
 
 test('a chart file and mark spec render at the explicit narrow size; stdout remains pure text', async () => {

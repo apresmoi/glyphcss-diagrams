@@ -134,7 +134,7 @@ You can name `glyphcss-charts` or `glyphcss-diagrams` explicitly. In Claude's pl
 
 | Destination | Layout budget |
 |---|---|
-| Chat | 72 columns × 24 rows per panel by default; uses a supplied host budget when available |
+| Chat | 72 columns × 24 rows per panel by default; line and area charts start at 48 × 16 and take `--size wide`, `tall` or `full`; uses a supplied host budget when available |
 | Direct terminal output | Reads stdout's actual TTY dimensions, with a small margin; otherwise 80 × 24 |
 | Explicit size | `--width N --height N` in character cells |
 

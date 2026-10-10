@@ -1,6 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 
+// Chat chart sizes in cells. Trends default to compact; the agent widens or
+// heightens from its data, and an explicit width or height still wins.
+export const CHART_SIZES = { compact: [48, 16], wide: [72, 16], tall: [48, 24], full: [72, 24] };
+
 export function parseCli(args, diagrams = false) {
   const { values, positionals } = parseArgs({
     args,
@@ -9,7 +13,7 @@ export function parseCli(args, diagrams = false) {
       width: { type: 'string' }, height: { type: 'string' },
       target: { type: 'string', default: 'chat' }, charset: { type: 'string' },
       json: { type: 'boolean', default: false }, help: { type: 'boolean', short: 'h' },
-      ...(diagrams ? { kind: { type: 'string' } } : {}),
+      ...(diagrams ? { kind: { type: 'string' } } : { size: { type: 'string' } }),
     },
   });
   if (positionals.length > 1) throw new Error('Pass one input file, or - for stdin.');
@@ -24,22 +28,28 @@ export function parseCli(args, diagrams = false) {
   if (values.charset && !['ascii', 'box', 'blocks', 'braille'].includes(values.charset)) {
     throw new Error('--charset must be ascii, box, blocks, or braille.');
   }
+  if (values.size && !Object.hasOwn(CHART_SIZES, values.size)) {
+    throw new Error(`--size must be ${Object.keys(CHART_SIZES).join(', ')}.`);
+  }
   if (values.kind && !['graph', 'sequence', 'lanes'].includes(values.kind)) {
     throw new Error('--kind must be graph, sequence, or lanes.');
   }
   return { ...values, input: positionals[0] ?? '-' };
 }
 
-export function resolveBudget(options, output = process.stdout) {
+export function resolveBudget(options, output = process.stdout, preferredSize) {
   const terminal = options.target === 'terminal';
+  const size = options.size ?? (terminal ? undefined : preferredSize);
   const dimension = (name, ttyName, margin, fallback) => {
     if (options[name] !== undefined) return [options[name], 'explicit'];
+    const sized = size && CHART_SIZES[size][name === 'width' ? 0 : 1];
+    if (options.size) return [sized, 'size'];
     // A tool's PTY is not the destination chat viewport. COLUMNS/LINES can
     // describe that same unrelated PTY, so neither is used for chat sizing.
     if (terminal && output.isTTY && Number.isInteger(output[ttyName]) && output[ttyName] > margin) {
       return [output[ttyName] - margin, 'terminal-tty'];
     }
-    return [fallback, terminal ? 'terminal-default' : 'chat-default'];
+    return [sized || fallback, terminal ? 'terminal-default' : 'chat-default'];
   };
   const [width, widthSource] = dimension('width', 'columns', 1, terminal ? 80 : 72);
   const [height, heightSource] = dimension('height', 'rows', 2, 24);
@@ -47,6 +57,7 @@ export function resolveBudget(options, output = process.stdout) {
     width, height, widthSource, heightSource,
     target: options.target,
     charset: options.charset ?? (terminal ? 'braille' : 'box'),
+    ...(size && (widthSource !== 'explicit' || heightSource !== 'explicit') ? { size } : {}),
   };
 }
 
@@ -116,16 +127,19 @@ export async function runCli({ kind, render, repairHint, diagrams = false }) {
   try {
     const options = parseCli(process.argv.slice(2), diagrams);
     if (options.help) {
-      process.stdout.write(`Usage: node render.mjs [input-file|-] [--width N] [--height N]\n  [--target chat|terminal] [--charset ascii|box|blocks|braille] [--json]${diagrams ? '\n  [--kind graph|sequence|lanes]' : ''}\n\nInput: ${diagrams ? 'Mermaid flowchart/sequence, or diagram JSON.' : 'Chart JSON: a plot, mark, mark array, or number array.'}\nDefault: monochrome chat, 72 columns x 24 rows per page.\nTerminal: output TTY minus margins, otherwise 80 x 24.\nText goes to stdout; budget and diagnostics go to stderr. --json includes all pages.\n`);
+      process.stdout.write(`Usage: node render.mjs [input-file|-] [--width N] [--height N]\n  [--target chat|terminal] [--charset ascii|box|blocks|braille] [--json]${diagrams ? '\n  [--kind graph|sequence|lanes]' : '\n  [--size compact|wide|tall|full]'}\n\nInput: ${diagrams ? 'Mermaid flowchart/sequence, or diagram JSON.' : 'Chart JSON: a plot, mark, mark array, or number array.'}\nDefault: monochrome chat, 72 columns x 24 rows per page${diagrams ? '' : '; line and area charts start compact (48 x 16)'}.\nTerminal: output TTY minus margins, otherwise 80 x 24.\nText goes to stdout; budget and diagnostics go to stderr. --json includes all pages.\n`);
       return;
     }
     budget = resolveBudget(options);
     const input = await readInput(options.input);
-    const rendered = await render(input, options, { ...budget, color: 'none' });
+    const rendered = await render(input, options, { ...budget, color: 'none' }, (preferredSize) => {
+      budget = resolveBudget(options, process.stdout, preferredSize);
+      return { ...budget, color: 'none' };
+    });
     result = rendered.result;
     budget = { ...budget, charset: rendered.charset ?? budget.charset };
     const output = prepareResult(rendered.kind ?? kind, result, budget);
-    process.stderr.write(`${JSON.stringify({ budget, columns: output.columns, pageCount: output.pages.length, report: output.report })}\n`);
+    process.stderr.write(`${JSON.stringify({ budget, columns: output.columns, pageCount: output.pages.length, report: output.report, ...(rendered.hint ? { hint: rendered.hint } : {}) })}\n`);
     process.stdout.write(`${options.json ? JSON.stringify(output) : output.text}\n`);
   } catch (error) {
     if (budget && error.charset) budget = { ...budget, charset: error.charset };
