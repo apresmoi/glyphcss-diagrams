@@ -1,7 +1,7 @@
 <h1>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.png?v=8c7eda825930">
-    <img alt="An agent terminal: a user asks for weekly signups, and the agent replies with a Glyphcss braille chart directly in the conversation." src="assets/hero-light.png?v=97449690bdd7" width="1200">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.png?v=86495e06aaac">
+    <img alt="An agent terminal: a user asks for weekly signups, and the agent replies with a Glyphcss braille chart directly in the conversation." src="assets/hero-light.png?v=dd3022a6ec7d" width="1200">
   </picture>
 </h1>
 
@@ -134,7 +134,7 @@ You can name `glyphcss-charts` or `glyphcss-diagrams` explicitly. In Claude's pl
 
 | Destination | Layout budget |
 |---|---|
-| Chat | 72 columns × 24 rows per panel by default; line and area charts start at 48 × 16 and take `--size wide`, `tall` or `full`; uses a supplied host budget when available |
+| Chat | 72 columns × 24 rows per panel by default; line, area and bar charts start at 48 × 16 and take `--size wide`, `tall` or `full`; uses a supplied host budget when available |
 | Direct terminal output | Reads stdout's actual TTY dimensions, with a small margin; otherwise 80 × 24 |
 | Explicit size | `--width N --height N` in character cells |
 

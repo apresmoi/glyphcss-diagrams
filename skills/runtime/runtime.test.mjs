@@ -131,7 +131,7 @@ test('a named size resolves both axes; explicit cells win per axis; terminal ign
   assert.equal(Object.hasOwn(resolveBudget({ target: 'chat', width: 30, height: 10 }, tty, 'compact'), 'size'), false);
 });
 
-test('trends start compact and hint a larger size only when the data outgrows it; other charts stay full', () => {
+test('trends and bars start compact and hint a larger size only when the data outgrows it; other charts stay full', () => {
   const series = (n, name) => Array.from({ length: n }, (_, i) => ({ day: `2026-09-${String(i + 1).padStart(2, '0')}`, value: i * 3 + 1, name }));
   const line = data => JSON.stringify({ marks: [{ type: 'line', data, channels: { x: 'day', y: 'value', stroke: 'name' } }] });
   const few = run('charts', line(series(13, 'a')));
@@ -147,8 +147,14 @@ test('trends start compact and hint a larger size only when the data outgrows it
   for (const args of [['--size', 'wide'], ['--width', '48', '--height', '16']]) {
     assert.equal(run('charts', line(series(30, 'a')), args).diagnostic.hint, undefined);
   }
-  const bars = success('charts', JSON.stringify({ type: 'bar', data: [3, 5, 2], channels: {} }));
-  assert.deepEqual([bars.budget.width, bars.budget.height, bars.budget.size], [72, 24, undefined]);
+  const bars = run('charts', JSON.stringify({ type: 'bar', data: [3, 5, 2], channels: {} }));
+  assert.deepEqual([bars.diagnostic.budget.width, bars.diagnostic.budget.height, bars.diagnostic.budget.size], [48, 16, 'compact']);
+  assert.equal(bars.diagnostic.hint, undefined);
+  const categories = n => JSON.stringify({ type: 'bar', data: Array.from({ length: n }, (_, i) => ({ team: `Team ${i}`, open: i + 1 })), channels: { x: 'team', y: 'open' } });
+  assert.equal(run('charts', categories(5)).diagnostic.hint, undefined);
+  assert.match(run('charts', categories(6)).diagnostic.hint, /6 bar categories.*--size wide/u);
+  const arcs = success('charts', JSON.stringify({ type: 'arc', data: [3, 5, 2], channels: {} }));
+  assert.deepEqual([arcs.budget.width, arcs.budget.height, arcs.budget.size], [72, 24, undefined]);
   const invalid = run('charts', '[1,2]', ['--size', 'huge']);
   assert.equal(invalid.status, 1);
   assert.match(invalid.diagnostic.error, /--size must be compact, wide, tall, full/u);
