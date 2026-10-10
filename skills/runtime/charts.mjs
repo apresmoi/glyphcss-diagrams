@@ -8,6 +8,11 @@ const isArc = mark => mark?.type === 'arc';
 // only repeats them, and plain ASCII fills read cleaner than mixed block,
 // line and stripe textures.
 const PIE_SHADES = ['#', '=', '+', ':', '.'];
+// Chat heatmaps: braille dot density for the faint end, then shade blocks,
+// on a bare grid whose row and column labels already do the axes' job.
+const isCell = mark => mark?.type === 'cell';
+const HEATMAP_RAMP = [...'⠂⠢⠪⡪⣺⣿▒▓█'];
+const bareAxes = axes => ({ ...axes, x: { line: false, ...axes?.x }, y: { line: false, ...axes?.y } });
 const values = (mark, channel) => {
   const field = mark.channels?.[channel];
   if (Array.isArray(field)) return [...new Set(field)];
@@ -56,9 +61,12 @@ await runCli({
     const options = budgetFor(trends.length || bars.length ? 'compact' : undefined);
     const charset = cli.charset ?? (trends.length ? 'braille' : options.charset);
     const pie = spec.marks.some(isArc);
-    const chartSpec = pie && spec.legend === undefined ? { ...spec, legend: false } : spec;
+    const heatmap = spec.marks.every(isCell);
+    let chartSpec = pie && spec.legend === undefined ? { ...spec, legend: false } : spec;
+    if (heatmap) chartSpec = { ...chartSpec, axes: bareAxes(chartSpec.axes) };
+    const ramp = heatmap && charset !== 'ascii' ? { cellRamp: HEATMAP_RAMP } : {};
     try {
-      const result = renderGlyphChart(chartSpec, { ...options, charset, ...(pie && { shades: PIE_SHADES }) });
+      const result = renderGlyphChart(chartSpec, { ...options, charset, ...(pie && { shades: PIE_SHADES }), ...ramp });
       // Without a legend a slice that lost its callout is anonymous.
       const unnamed = chartSpec.legend === false ? result.report.ledger.filter(entry => entry.code === 'label-dropped' && entry.detail?.role === 'pie callout').map(entry => entry.detail.text) : [];
       if (unnamed.length) throw Object.assign(new Error(`Pie slices without a label: ${unnamed.join(', ')}. Group small slices into one disclosed slice, or use a bar chart.`), { code: 'GLYPH_SKILL_UNFIT' });

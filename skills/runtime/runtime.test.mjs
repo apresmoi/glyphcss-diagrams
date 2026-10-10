@@ -178,6 +178,19 @@ test('chat pies label every slice in place: ASCII fills, no legend, and no anony
   assert.equal(run('charts', JSON.stringify({ legend: true, marks: [{ type: 'arc', data: [{ name: 'Big', v: 97 }, { name: 'Tiny', v: 1 }, { name: 'Rest', v: 2 }], channels: { y: 'v', fill: 'name' } }] })).status, 0);
 });
 
+test('chat heatmaps render a bare braille-to-block grid with a range key', () => {
+  const data = ['Mon', 'Tue', 'Wed'].flatMap((day, d) => ['00', '01', '02', '03'].map((hour, h) => ({ day, hour, v: d * 4 + h })));
+  const heatmap = extra => JSON.stringify({ ...extra, marks: [{ type: 'cell', data, channels: { x: 'hour', y: 'day', fill: 'v' } }] });
+  // Mutation: drop the skill's `cellRamp` or its bare axes -> red.
+  const chat = success('charts', heatmap({}));
+  assert.doesNotMatch(chat.text, /[│┤└─┬]/u);
+  assert.match(chat.text, /^ *0 ⠂⠂⠢⠢⠪⠪⡪⡪⣺⣺⣿⣿▒▒▓▓██ 11$/mu);
+  // A spec that asks for an axis line keeps it.
+  assert.match(success('charts', heatmap({ axes: { y: { line: true } } })).text, /┤/u);
+  // ASCII keeps the library's 7-bit ramp.
+  assert.match(success('charts', heatmap({}), ['--charset', 'ascii']).text, /^ *0 \.\.::\+\+\*\*%%##@@ 11$/mu);
+});
+
 test('a chart file and mark spec render at the explicit narrow size; stdout remains pure text', async () => {
   const input = JSON.stringify({ type: 'bar', data: [{ month: 'Jan', value: 12 }, { month: 'Feb', value: 18 }], channels: { x: 'month', y: 'value' } });
   const file = join(directory, 'chart.json');
