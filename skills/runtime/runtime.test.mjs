@@ -153,6 +153,11 @@ test('trends and bars start compact and hint a larger size only when the data ou
   const categories = n => JSON.stringify({ type: 'bar', data: Array.from({ length: n }, (_, i) => ({ team: `Team ${i}`, open: i + 1 })), channels: { x: 'team', y: 'open' } });
   assert.equal(run('charts', categories(5)).diagnostic.hint, undefined);
   assert.match(run('charts', categories(6)).diagnostic.hint, /6 bar categories.*--size wide/u);
+  // A histogram counts its bins, not its raw values.
+  // Mutation: count distinct raw x values for a binned bar -> a spurious wide hint.
+  const histogram = n => JSON.stringify({ type: 'bar', data: Array.from({ length: 200 }, (_, i) => ({ ms: i })), channels: { x: 'ms', y: 'ms' }, transform: { kind: 'bin', n } });
+  assert.equal(run('charts', histogram(8)).diagnostic.hint, undefined);
+  assert.match(run('charts', histogram(20)).diagnostic.hint, /20 bar categories.*--size wide/u);
   const arcs = success('charts', JSON.stringify({ type: 'arc', data: [3, 5, 2], channels: {} }));
   assert.deepEqual([arcs.budget.width, arcs.budget.height, arcs.budget.size], [72, 24, undefined]);
   const invalid = run('charts', '[1,2]', ['--size', 'huge']);

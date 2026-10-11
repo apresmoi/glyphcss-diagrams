@@ -27,10 +27,13 @@ const AXIS_COLUMNS = 8, COLUMNS_PER_POINT = 1.5, CROWDED_SERIES = 3;
 // The library paints each bar series three cells wide; a category also needs
 // its label plus a gap to the next one.
 const BAR_COLUMNS = 3;
+// A binned bar (a histogram) draws its `n` bins (the library's default is 10)
+// under numeric tick labels, never one category per raw x value.
+const barCategories = mark => mark.transform?.kind === 'bin' ? mark.transform.n ?? 10 : distinct(mark, 'x');
 const barColumns = mark => {
   const series = mark.transform?.kind === 'stack' ? 1 : distinct(mark, 'fill');
-  const label = Math.max(...values(mark, 'x').map(value => String(value).length));
-  return distinct(mark, 'x') * (Math.max(series * BAR_COLUMNS, label) + 1);
+  const label = mark.transform?.kind === 'bin' ? 0 : Math.max(...values(mark, 'x').map(value => String(value).length));
+  return barCategories(mark) * (Math.max(series * BAR_COLUMNS, label) + 1);
 };
 
 // The agent picks a size before rendering; this only catches a choice the data
@@ -39,7 +42,7 @@ function sizeHint(trends, bars, budget) {
   if ((!trends.length && !bars.length) || budget.widthSource !== 'chat-default' || budget.heightSource !== 'chat-default') return undefined;
   const room = budget.width - AXIS_COLUMNS;
   const points = trends.length ? Math.max(...trends.map(mark => distinct(mark, 'x'))) : 0;
-  const categories = bars.length ? Math.max(...bars.map(mark => distinct(mark, 'x'))) : 0;
+  const categories = bars.length ? Math.max(...bars.map(barCategories)) : 0;
   const series = trends.reduce((sum, mark) => sum + Math.max(distinct(mark, 'stroke'), distinct(mark, 'fill')), 0);
   const crowdedPoints = points * COLUMNS_PER_POINT > room;
   const crowdedBars = bars.some(mark => barColumns(mark) > room);

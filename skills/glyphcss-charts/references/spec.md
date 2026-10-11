@@ -7,7 +7,7 @@ Each mark is `{ "type": ..., "data": [...], "channels": {...}, "options"?: {...}
 | Mark | Channels | Meaning |
 |---|---|---|
 | `line`, `area`, `dot` | `x`, `y`; optional `stroke`/`fill` | Ordered trend, filled trend, points |
-| `bar`, `rect` | `x`, `y`; optional `fill` | Categories and magnitudes; x is categorical |
+| `bar` | `x`, `y`; optional `fill` | Categories and magnitudes; with a `bin` transform, a histogram over a numeric x |
 | `cell` | `x`, `y`, `fill` | Matrix categories and cell value |
 | `arc` | `y`, `fill` | Positive slice value and category; `options.innerRadius: 0.5` makes a donut |
 | `text` | `x`, `y`, `label` | Text at data coordinates |
@@ -19,7 +19,7 @@ For `line`, `area`, `bar`, `dot`, bare numeric data with empty channels uses ind
 
 - Multiple series: map `stroke` (lines) or `fill` (regions) to the category field. `options.name` names a whole mark in the legend. Monochrome series use different glyphs/styles.
 - Transforms: `transform: {"kind":"group","reduce":"sum"}` aggregates by x; `stack` stacks y by x; `bin` uses `n` bins; `window` uses `n` consecutive rows and `reduce`; `normalize` divides by the largest absolute y. Transform kinds go on the mark, not inside `options`. Arc, Sankey, and funnel do not support transforms.
-- Scales: `scales: {"x":{"type":"time"},"y":{"domain":[0,100]}}`. Types: `linear`, `log`, `sqrt`, `time`, `band`. ISO date strings work for continuous time marks. Bar/rect/area domains include zero; zero is invalid on a log scale.
+- Scales: `scales: {"x":{"type":"time"},"y":{"domain":[0,100]}}`. Types: `linear`, `log`, `sqrt`, `time`, `band`. ISO date strings work for continuous time marks. Bar and area domains include zero; zero is invalid on a log scale.
 - Axes: `axes: {"x":{"title":"Month"},"y":{"title":"Revenue ($k)","format":"si"}}`. Tick formats may be named presets, such as `si`, or objects such as `{"preset":"currency","symbol":"$"}`. Use unit-bearing titles.
 - `legend: false` explicitly hides the legend. Do this only when the remaining labels identify every series.
 
