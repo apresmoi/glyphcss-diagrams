@@ -10,7 +10,7 @@ Each mark is `{ "type": ..., "data": [...], "channels": {...}, "options"?: {...}
 | `bar` | `x`, `y`; optional `fill` | Categories and magnitudes; with a `bin` transform, a histogram over a numeric x |
 | `cell` | `x`, `y`, `fill` | Matrix categories and cell value |
 | `arc` | `y`, `fill` | Positive slice value and category; `options.innerRadius: 0.5` makes a donut |
-| `text` | `x`, `y`, `label` | Text at data coordinates |
+| `text` | `x`, `y`, `label` | Labels at data coordinates; an annotation layered over another mark in the same `marks` array, never a chart on its own |
 | `rule` | `{}`; numeric `data` | Reference values; `options.axis` is `x` or `y` (default `y`) |
 | `sankey` | `source`, `target`, `value` | Positive flows in an acyclic graph |
 | `funnel` | `stage`, `value` | Positive values in authored stage order |
