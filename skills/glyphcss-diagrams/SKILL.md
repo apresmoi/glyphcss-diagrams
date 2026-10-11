@@ -1,6 +1,6 @@
 ---
 name: glyphcss-diagrams
-description: Render Mermaid, graph data, sequences, and branching histories as readable text directly in chat or a terminal. Use for character-based workflows, architecture, dependencies, message exchanges, or branch and merge diagrams.
+description: Use whenever a reply needs a diagram — a flow, pipeline, architecture, command tree, decision branches, dependencies, a message sequence between services, or a branch and merge history — instead of hand-drawing box or arrow characters. Write Mermaid or graph JSON; the renderer returns aligned text sized for chat or a terminal. Triggers on "diagram", "draw", "show me how it flows", "how does X branch", "architecture", "pipeline", "sequence", "who calls what".
 ---
 
 # Glyphcss diagrams

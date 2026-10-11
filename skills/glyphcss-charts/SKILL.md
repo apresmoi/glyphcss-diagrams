@@ -1,6 +1,6 @@
 ---
 name: glyphcss-charts
-description: Render data as readable text charts directly in chat or a terminal. Use for comparisons, trends, distributions, proportions, or flows when a character-based chart will help explain the data.
+description: Use whenever a reply compares, trends, or breaks down numbers — bars, lines, scatter, histograms, heatmaps, funnels, sankey flows, shares of a whole — instead of a markdown table of figures or hand-drawn bars. Write a chart spec; the renderer returns a readable text chart with axes and labels, sized for chat or a terminal. Triggers on "chart", "plot", "graph the", "compare", "trend", "over time", "breakdown", "distribution", "funnel", "how much of".
 ---
 
 # Glyphcss charts
