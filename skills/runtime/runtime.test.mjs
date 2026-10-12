@@ -43,8 +43,8 @@ function success(kind, input, args = []) {
     assert.equal(page.columns, Math.max(...lines.map(line => [...line].length)));
     assert.equal(page.rows, lines.length);
     assert.ok(page.columns <= output.budget.width, JSON.stringify(page));
-    // Graphs grow taller instead of paginating; other kinds keep the height.
-    if (output.kind !== 'graph') assert.ok(page.rows <= output.budget.height, JSON.stringify(page));
+    // Graphs and sequences grow taller instead of paginating; other kinds keep the height.
+    if (!['graph', 'sequence'].includes(output.kind)) assert.ok(page.rows <= output.budget.height, JSON.stringify(page));
     assert.doesNotMatch(page.text, /\x1b| +$/mu);
   }
   assert.equal(Object.hasOwn(output, 'canvas'), false);
@@ -235,11 +235,12 @@ test('graph JSON uses the same renderer as Mermaid', () => {
   assert.equal(output.meta.edges.length, 1);
 });
 
-test('sequence autodetection and explicit sequence JSON retain every message across pages', () => {
+test('sequence autodetection and explicit sequence JSON keep every message in one taller panel', () => {
   const mermaid = 'sequenceDiagram\n participant A\n participant B\n A->>B: One\n B-->>A: Two\n A->>B: Three';
   const output = success('diagrams', mermaid, ['--height', '6']);
   assert.equal(output.kind, 'sequence');
-  assert.equal(output.pages.length, 3);
+  assert.equal(output.pages.length, 1);
+  assert.ok(output.pages[0].rows > 6);
   for (const label of ['One', 'Two', 'Three']) assert.match(output.text, new RegExp(label));
   const json = success('diagrams', JSON.stringify({ participants: [{ id: 'a', label: 'Alpha' }, { id: 'b', label: 'Beta' }], messages: [{ from: 'a', to: 'b', label: 'Hello' }] }), ['--kind', 'sequence']);
   assert.match(json.text, /Hello/);

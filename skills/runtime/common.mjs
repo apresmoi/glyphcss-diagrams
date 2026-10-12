@@ -112,7 +112,7 @@ export function prepareResult(kind, result, budget) {
     throw Object.assign(new Error('The render would omit or aggregate input data, labels, or connections within this budget.'), { code: 'GLYPH_SKILL_UNFIT' });
   }
   // Height is a preference for graphs, which grow taller rather than split.
-  const tooTall = page => kind !== 'graph' && page.rows > budget.height;
+  const tooTall = page => kind !== 'graph' && kind !== 'sequence' && page.rows > budget.height;
   if (!pages.length || pages.some(page => !page.text || page.columns > budget.width || tooTall(page) || /[\x00-\x08\x0b-\x1f\x7f]/u.test(page.text))) {
     throw Object.assign(new Error('The rendered output is empty, contains control characters, or exceeds the cell budget.'), { code: 'GLYPH_SKILL_UNFIT' });
   }
