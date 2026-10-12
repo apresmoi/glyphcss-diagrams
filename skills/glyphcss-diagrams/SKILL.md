@@ -1,6 +1,6 @@
 ---
 name: glyphcss-diagrams
-description: Use whenever a reply needs a diagram — a flow, pipeline, architecture, command tree, decision branches, dependencies, a message sequence between services, or anything that forks and rejoins over time (a branch and merge history, parallel workstreams, a family tree, revision or experiment lineage) — instead of hand-drawing box or arrow characters. Write Mermaid or graph JSON; the renderer returns aligned text sized for chat or a terminal. Triggers on "diagram", "draw", "show me how it flows", "how does X branch", "architecture", "pipeline", "sequence", "who calls what".
+description: Use whenever a reply needs a diagram — a flow, pipeline, architecture, command tree, decision branches, dependencies, a message sequence between services, or anything that forks and rejoins over time (a branch and merge history, parallel workstreams, a branching story, revision or experiment lineage) — instead of hand-drawing box or arrow characters. Write Mermaid or graph JSON; the renderer returns aligned text sized for chat or a terminal. Triggers on "diagram", "draw", "show me how it flows", "how does X branch", "architecture", "pipeline", "sequence", "who calls what".
 ---
 
 # Glyphcss diagrams
@@ -9,7 +9,7 @@ By default, author Mermaid or graph JSON, run the bundled renderer, and put its 
 
 ## Choose and render
 
-- Use a flowchart for dependencies or decisions, a sequence for ordered exchanges, and lanes for anything that forks and rejoins over time: git histories, plans whose workstreams split and converge, family trees, revision or experiment lineage. Use short meaningful labels; label decision branches. Preserve the user's nodes, connections, and direction unless automatic orientation is appropriate.
+- Use a flowchart for dependencies or decisions, a sequence for ordered exchanges, and lanes for a main line that forks and rejoins over time: git histories, plans whose workstreams split and converge, branching stories, revision or experiment lineage. Use a top-down flowchart for family trees and other graphs where most nodes join several lines. Use short meaningful labels; label decision branches. Preserve the user's nodes, connections, and direction unless automatic orientation is appropriate.
 - Start with Mermaid `flowchart`/`graph`. The renderer also detects `sequenceDiagram`. For JSON authoring, sequence details, or lanes, read [the source reference](references/source.md).
 
 ```sh
