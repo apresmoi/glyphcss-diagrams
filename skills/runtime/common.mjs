@@ -111,7 +111,9 @@ export function prepareResult(kind, result, budget) {
   if (result.report.unroutable?.length || result.report.ledger.some(losesContent)) {
     throw Object.assign(new Error('The render would omit or aggregate input data, labels, or connections within this budget.'), { code: 'GLYPH_SKILL_UNFIT' });
   }
-  if (!pages.length || pages.some(page => !page.text || page.columns > budget.width || page.rows > budget.height || /[\x00-\x08\x0b-\x1f\x7f]/u.test(page.text))) {
+  // Height is a preference for graphs, which grow taller rather than split.
+  const tooTall = page => kind !== 'graph' && page.rows > budget.height;
+  if (!pages.length || pages.some(page => !page.text || page.columns > budget.width || tooTall(page) || /[\x00-\x08\x0b-\x1f\x7f]/u.test(page.text))) {
     throw Object.assign(new Error('The rendered output is empty, contains control characters, or exceeds the cell budget.'), { code: 'GLYPH_SKILL_UNFIT' });
   }
   if (kind === 'graph') assertGraphCoverage(result);

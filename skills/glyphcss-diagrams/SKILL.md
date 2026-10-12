@@ -25,7 +25,7 @@ MERMAID
 - Replying in chat: use the default 72 columns × 24 rows, monochrome box characters. Do not use a tool subprocess's terminal size as the chat width. Never ask the user for window dimensions.
 - When the host provides a text-cell budget or the user requests one, pass `--width N --height N`. These are character cells, not pixels; the default is a budget, not a measured window.
 - Only for output directly to a real terminal, use `--target terminal`; it reads stdout's dimensions, otherwise falls back to 80×24. Use `--charset ascii` for strictly ASCII output.
-- Graphs automatically try label wrapping, spacing, and perpendicular orientation, then paginate while retaining graph identities. Never manually wrap or clip the rendered lines. A crowded graph may need several panels; preserve and show every panel.
+- Graphs automatically try label wrapping, spacing, perpendicular orientation and wrapping a long path into rows, keeping the width and growing taller when needed; a graph is never split into panels. Never manually wrap or clip the rendered lines. Sequences and lane histories may still need several panels; preserve and show every panel.
 
 ## Check and deliver
 

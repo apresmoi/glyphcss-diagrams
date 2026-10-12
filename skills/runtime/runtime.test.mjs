@@ -43,7 +43,8 @@ function success(kind, input, args = []) {
     assert.equal(page.columns, Math.max(...lines.map(line => [...line].length)));
     assert.equal(page.rows, lines.length);
     assert.ok(page.columns <= output.budget.width, JSON.stringify(page));
-    assert.ok(page.rows <= output.budget.height, JSON.stringify(page));
+    // Graphs grow taller instead of paginating; other kinds keep the height.
+    if (output.kind !== 'graph') assert.ok(page.rows <= output.budget.height, JSON.stringify(page));
     assert.doesNotMatch(page.text, /\x1b| +$/mu);
   }
   assert.equal(Object.hasOwn(output, 'canvas'), false);
@@ -210,7 +211,7 @@ test('a chart file and mark spec render at the explicit narrow size; stdout rema
   assert.equal(text.stdout, `${output.text}\n`);
 });
 
-test('graph renders all original connections at a narrow budget and can paginate without omissions', () => {
+test('graph renders all original connections at a narrow budget and grows taller instead of paginating', () => {
   const input = 'flowchart LR\n A[Author] --> B[Render]\n B --> C[Chat]\n A --> D[Review]\n D --> C';
   const narrow = success('diagrams', input, ['--width', '28', '--height', '12']);
   assert.equal(narrow.kind, 'graph');
@@ -219,10 +220,12 @@ test('graph renders all original connections at a narrow budget and can paginate
   assert.equal(narrow.meta.edges.length, 4);
   assert.equal(narrow.budget.widthSource, 'explicit');
   assert.deepEqual(narrow.report.unroutable, []);
-  const paged = success('diagrams', 'flowchart LR\n A-->B\n B-->C\n C-->D\n D-->E', ['--width', '18', '--height', '10']);
-  assert.ok(paged.pages.length > 1);
-  for (const label of ['A', 'B', 'C', 'D', 'E']) assert.ok(paged.text.includes(label));
-  assert.equal(paged.meta.edges.length, 4);
+  const tall = success('diagrams', 'flowchart LR\n A-->B\n B-->C\n C-->D\n D-->E', ['--width', '18', '--height', '10']);
+  assert.equal(tall.pages.length, 1);
+  assert.ok(tall.columns <= 18);
+  assert.ok(tall.pages[0].rows > 10);
+  for (const label of ['A', 'B', 'C', 'D', 'E']) assert.ok(tall.text.includes(label));
+  assert.equal(tall.meta.edges.length, 4);
 });
 
 test('graph JSON uses the same renderer as Mermaid', () => {
@@ -302,10 +305,11 @@ test('charts refuse folded stages, lost slices, and folded, dropped, or unroutab
 
 test('diagram branch labels cannot disappear on a successful render', () => {
   const input = 'flowchart TB\n A{Valid?} -->|yes| B[Save]\n A -->|no| C[Reject]\n B -->|retry later| A';
+  // Too narrow for every label: refused outright, never pasted with one missing.
   const failed = run('diagrams', input, ['--width', '20', '--height', '12']);
   assert.equal(failed.status, 1, failed.stderr);
   assert.equal(failed.stdout, '');
-  assert.ok(failed.diagnostic.report.ledger.some(entry => entry.code === 'label-dropped' && entry.detail.text === 'retry later'));
+  assert.equal(failed.diagnostic.code, 'GLYPH_SKILL_UNFIT');
   const complete = success('diagrams', input, ['--width', '28', '--height', '12']);
   for (const label of ['yes', 'no', 'retry later']) assert.ok(complete.text.includes(label));
 });
