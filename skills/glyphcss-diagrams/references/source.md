@@ -42,6 +42,8 @@ Participant order controls columns; message order controls time. Optional `frame
 
 ## Lanes
 
-Use `--kind lanes` for JSON or a `git log --pretty=format:'%h|%p|%d|%s'` string. JSON is `{"nodes":[{"id":"new","label":"Release","parents":["old"],"marks":["main"]},{"id":"old","label":"Start","parents":[]}]}`.
+Use `--kind lanes` for JSON or a `git log --date-order -n 30 --pretty=format:'%h|%p|%d|%s'` string. A git window may cut history off: lines whose parents fall outside it end in a dashed continuation, never a false start. Git rows show the commit hash; JSON rows show only marks and label.
 
-Nodes are newest first; every parent must appear later in the array. Parents express topology; `marks` are optional tags. Tight layouts may share an overflow lane or shorten labels; retain every node row and disclose the diagnostic.
+JSON is `{"nodes":[{"id":"new","label":"Release","parents":["old"],"marks":["main"]},{"id":"old","label":"Start","parents":[]}]}`. Nodes are newest first; every parent must appear later in the array. Parents express topology; `marks` are optional tags. Add `"truncated": true` when the nodes are a window of a longer history and some parents are outside it.
+
+Git histories read newest first. For a plan, story, or lineage that reads forward in time, still author newest first and pass `--order oldest-first` to draw the oldest node at the top. Tight layouts may share an overflow lane or shorten labels; retain every node row and disclose the diagnostic.

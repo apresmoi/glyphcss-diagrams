@@ -43,8 +43,8 @@ function success(kind, input, args = []) {
     assert.equal(page.columns, Math.max(...lines.map(line => [...line].length)));
     assert.equal(page.rows, lines.length);
     assert.ok(page.columns <= output.budget.width, JSON.stringify(page));
-    // Graphs and sequences grow taller instead of paginating; other kinds keep the height.
-    if (!['graph', 'sequence'].includes(output.kind)) assert.ok(page.rows <= output.budget.height, JSON.stringify(page));
+    // Diagrams grow taller instead of paginating; other kinds keep the height.
+    if (!['graph', 'sequence', 'lanes'].includes(output.kind)) assert.ok(page.rows <= output.budget.height, JSON.stringify(page));
     assert.doesNotMatch(page.text, /\x1b| +$/mu);
   }
   assert.equal(Object.hasOwn(output, 'canvas'), false);
@@ -246,7 +246,7 @@ test('sequence autodetection and explicit sequence JSON keep every message in on
   assert.match(json.text, /Hello/);
 });
 
-test('lane pagination retains every node and its connector row', () => {
+test('lane histories grow taller instead of splitting, and read oldest first on request', () => {
   const input = JSON.stringify({ nodes: [
     { id: 'c', label: 'Merge', parents: ['a', 'b'] },
     { id: 'b', label: 'Branch', parents: ['a'] },
@@ -254,12 +254,19 @@ test('lane pagination retains every node and its connector row', () => {
   ] });
   const output = success('diagrams', input, ['--kind', 'lanes', '--height', '2']);
   assert.equal(output.kind, 'lanes');
-  assert.equal(output.pages.length, 3);
+  assert.equal(output.pages.length, 1);
+  assert.ok(output.pages[0].rows > 2);
   for (const label of ['Merge', 'Branch', 'Start']) assert.match(output.text, new RegExp(label));
-  const failed = run('diagrams', input, ['--kind', 'lanes', '--height', '1']);
-  assert.equal(failed.status, 1);
-  assert.equal(failed.stdout, '');
-  assert.equal(failed.diagnostic.code, 'GLYPH_SKILL_UNFIT');
+  const first = text => text.split('\n').find(line => /Merge|Branch|Start/.test(line));
+  assert.match(first(output.text), /Merge/);
+  assert.match(first(success('diagrams', input, ['--kind', 'lanes', '--order', 'oldest-first']).text), /Start/);
+  // Mutation: ask for a repair hint without an error code -> a bad flag crashes with a stack trace instead of JSON.
+  for (const args of [['--kind', 'lanes', '--order', 'sideways'], ['--kind', 'bogus']]) {
+    const failed = run('diagrams', input, args);
+    assert.equal(failed.status, 1);
+    assert.equal(failed.stdout, '');
+    assert.match(failed.diagnostic.error, /--(order|kind) must be/);
+  }
 });
 
 test('malformed specs and impossible sizes fail before any misleading text is emitted', () => {

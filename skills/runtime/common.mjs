@@ -13,7 +13,7 @@ export function parseCli(args, diagrams = false) {
       width: { type: 'string' }, height: { type: 'string' },
       target: { type: 'string', default: 'chat' }, charset: { type: 'string' },
       json: { type: 'boolean', default: false }, help: { type: 'boolean', short: 'h' },
-      ...(diagrams ? { kind: { type: 'string' } } : { size: { type: 'string' } }),
+      ...(diagrams ? { kind: { type: 'string' }, order: { type: 'string' } } : { size: { type: 'string' } }),
     },
   });
   if (positionals.length > 1) throw new Error('Pass one input file, or - for stdin.');
@@ -33,6 +33,9 @@ export function parseCli(args, diagrams = false) {
   }
   if (values.kind && !['graph', 'sequence', 'lanes'].includes(values.kind)) {
     throw new Error('--kind must be graph, sequence, or lanes.');
+  }
+  if (values.order && !['newest-first', 'oldest-first'].includes(values.order)) {
+    throw new Error('--order must be newest-first or oldest-first.');
   }
   return { ...values, input: positionals[0] ?? '-' };
 }
@@ -111,8 +114,8 @@ export function prepareResult(kind, result, budget) {
   if (result.report.unroutable?.length || result.report.ledger.some(losesContent)) {
     throw Object.assign(new Error('The render would omit or aggregate input data, labels, or connections within this budget.'), { code: 'GLYPH_SKILL_UNFIT' });
   }
-  // Height is a preference for graphs, which grow taller rather than split.
-  const tooTall = page => kind !== 'graph' && kind !== 'sequence' && page.rows > budget.height;
+  // Height is a preference for diagrams, which grow taller rather than split.
+  const tooTall = page => !['graph', 'sequence', 'lanes'].includes(kind) && page.rows > budget.height;
   if (!pages.length || pages.some(page => !page.text || page.columns > budget.width || tooTall(page) || /[\x00-\x08\x0b-\x1f\x7f]/u.test(page.text))) {
     throw Object.assign(new Error('The rendered output is empty, contains control characters, or exceeds the cell budget.'), { code: 'GLYPH_SKILL_UNFIT' });
   }
@@ -129,7 +132,7 @@ export async function runCli({ kind, render, repairHint, diagrams = false }) {
   try {
     const options = parseCli(process.argv.slice(2), diagrams);
     if (options.help) {
-      process.stdout.write(`Usage: node render.mjs [input-file|-] [--width N] [--height N]\n  [--target chat|terminal] [--charset ascii|box|blocks|braille] [--json]${diagrams ? '\n  [--kind graph|sequence|lanes]' : '\n  [--size compact|wide|tall|full]'}\n\nInput: ${diagrams ? 'Mermaid flowchart/sequence, or diagram JSON.' : 'Chart JSON: a plot, mark, mark array, or number array.'}\nDefault: monochrome chat, 72 columns x 24 rows per page${diagrams ? '' : '; line and area charts start compact (48 x 16)'}.\nTerminal: output TTY minus margins, otherwise 80 x 24.\nText goes to stdout; budget and diagnostics go to stderr. --json includes all pages.\n`);
+      process.stdout.write(`Usage: node render.mjs [input-file|-] [--width N] [--height N]\n  [--target chat|terminal] [--charset ascii|box|blocks|braille] [--json]${diagrams ? '\n  [--kind graph|sequence|lanes] [--order newest-first|oldest-first]' : '\n  [--size compact|wide|tall|full]'}\n\nInput: ${diagrams ? 'Mermaid flowchart/sequence, or diagram JSON.' : 'Chart JSON: a plot, mark, mark array, or number array.'}\nDefault: monochrome chat, 72 columns x 24 rows per page${diagrams ? '' : '; line and area charts start compact (48 x 16)'}.\nTerminal: output TTY minus margins, otherwise 80 x 24.\nText goes to stdout; budget and diagnostics go to stderr. --json includes all pages.\n`);
       return;
     }
     budget = resolveBudget(options);
@@ -149,7 +152,7 @@ export async function runCli({ kind, render, repairHint, diagrams = false }) {
       error: error.message, code: error.code ?? 'GLYPH_SKILL_ERROR',
       hint: error.code === 'GLYPH_SKILL_UNFIT'
         ? 'Choose a representation that supports every input value, use a larger known destination budget, or author separate complete views and disclose the split. Do not silently omit or combine data, labels, or connections.'
-        : repairHint?.(error.code),
+        : error.code ? repairHint?.(error.code) : undefined,
       ...(budget ? { budget } : {}), ...(result ? { report: result.report } : {}),
       ...(error.missingNodes ? { missingNodes: error.missingNodes, missingEdges: error.missingEdges } : {}),
     })}\n`);
