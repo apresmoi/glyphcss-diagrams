@@ -43,7 +43,8 @@ function success(kind, input, args = []) {
     assert.equal(page.columns, Math.max(...lines.map(line => [...line].length)));
     assert.equal(page.rows, lines.length);
     assert.ok(page.columns <= output.budget.width, JSON.stringify(page));
-    assert.ok(page.rows <= output.budget.height, JSON.stringify(page));
+    // Diagrams grow taller instead of paginating; other kinds keep the height.
+    if (!['graph', 'sequence', 'lanes'].includes(output.kind)) assert.ok(page.rows <= output.budget.height, JSON.stringify(page));
     assert.doesNotMatch(page.text, /\x1b| +$/mu);
   }
   assert.equal(Object.hasOwn(output, 'canvas'), false);
@@ -70,8 +71,8 @@ test('portable charts run without node_modules or creating artifacts, preserve v
   const output = success('charts', '[2,4,3,8]');
   assert.equal(output.kind, 'chart');
   assert.equal(output.meta.values, 4);
-  assert.equal(output.budget.width, 72);
-  assert.equal(output.budget.height, 24);
+  assert.equal(output.budget.width, 48);
+  assert.equal(output.budget.height, 16);
   assert.equal(output.budget.widthSource, 'chat-default');
   assert.equal(output.budget.charset, 'braille');
   assert.match(output.text, /[\u2801-\u28ff]/u);
@@ -115,6 +116,87 @@ test('chat trends select braille across input forms; other charts and explicit o
   }
 });
 
+test('a named size resolves both axes; explicit cells win per axis; terminal ignores the trend default', () => {
+  const tty = { isTTY: true, columns: 121, rows: 42 };
+  assert.deepEqual(resolveBudget({ target: 'chat' }, tty, 'compact'), {
+    width: 48, height: 16, widthSource: 'chat-default', heightSource: 'chat-default', target: 'chat', charset: 'box', size: 'compact',
+  });
+  for (const [size, width, height] of [['compact', 48, 16], ['wide', 72, 16], ['tall', 48, 24], ['full', 72, 24]]) {
+    const budget = resolveBudget({ target: 'chat', size }, tty, 'compact');
+    assert.deepEqual([budget.width, budget.height, budget.widthSource, budget.size], [width, height, 'size', size]);
+  }
+  assert.deepEqual(resolveBudget({ target: 'terminal' }, tty, 'compact').width, 120);
+  assert.equal(resolveBudget({ target: 'terminal', size: 'wide' }, tty).width, 72);
+  const mixed = resolveBudget({ target: 'chat', size: 'wide', height: 20 }, tty);
+  assert.deepEqual([mixed.width, mixed.height, mixed.heightSource], [72, 20, 'explicit']);
+  assert.equal(Object.hasOwn(resolveBudget({ target: 'chat', width: 30, height: 10 }, tty, 'compact'), 'size'), false);
+});
+
+test('trends and bars start compact and hint a larger size only when the data outgrows it; other charts stay full', () => {
+  const series = (n, name) => Array.from({ length: n }, (_, i) => ({ day: `2026-09-${String(i + 1).padStart(2, '0')}`, value: i * 3 + 1, name }));
+  const line = data => JSON.stringify({ marks: [{ type: 'line', data, channels: { x: 'day', y: 'value', stroke: 'name' } }] });
+  const few = run('charts', line(series(13, 'a')));
+  assert.equal(few.status, 0, few.stderr);
+  assert.deepEqual([few.diagnostic.budget.width, few.diagnostic.budget.height], [48, 16]);
+  assert.equal(few.diagnostic.hint, undefined);
+  const many = run('charts', line(series(30, 'a')));
+  assert.match(many.diagnostic.hint, /30 x points.*--size wide/u);
+  const crowded = run('charts', line(['a', 'b', 'c'].flatMap(name => series(10, name))));
+  assert.match(crowded.diagnostic.hint, /3 series.*--size tall/u);
+  const both = run('charts', line(['a', 'b', 'c'].flatMap(name => series(30, name))));
+  assert.match(both.diagnostic.hint, /--size full/u);
+  for (const args of [['--size', 'wide'], ['--width', '48', '--height', '16']]) {
+    assert.equal(run('charts', line(series(30, 'a')), args).diagnostic.hint, undefined);
+  }
+  const bars = run('charts', JSON.stringify({ type: 'bar', data: [3, 5, 2], channels: {} }));
+  assert.deepEqual([bars.diagnostic.budget.width, bars.diagnostic.budget.height, bars.diagnostic.budget.size], [48, 16, 'compact']);
+  assert.equal(bars.diagnostic.hint, undefined);
+  const categories = n => JSON.stringify({ type: 'bar', data: Array.from({ length: n }, (_, i) => ({ team: `Team ${i}`, open: i + 1 })), channels: { x: 'team', y: 'open' } });
+  assert.equal(run('charts', categories(5)).diagnostic.hint, undefined);
+  assert.match(run('charts', categories(6)).diagnostic.hint, /6 bar categories.*--size wide/u);
+  // A histogram counts its bins, not its raw values.
+  // Mutation: count distinct raw x values for a binned bar -> a spurious wide hint.
+  const histogram = n => JSON.stringify({ type: 'bar', data: Array.from({ length: 200 }, (_, i) => ({ ms: i })), channels: { x: 'ms', y: 'ms' }, transform: { kind: 'bin', n } });
+  assert.equal(run('charts', histogram(8)).diagnostic.hint, undefined);
+  assert.match(run('charts', histogram(20)).diagnostic.hint, /20 bar categories.*--size wide/u);
+  const arcs = success('charts', JSON.stringify({ type: 'arc', data: [3, 5, 2], channels: {} }));
+  assert.deepEqual([arcs.budget.width, arcs.budget.height, arcs.budget.size], [72, 24, undefined]);
+  const invalid = run('charts', '[1,2]', ['--size', 'huge']);
+  assert.equal(invalid.status, 1);
+  assert.match(invalid.diagnostic.error, /--size must be compact, wide, tall, full/u);
+});
+
+test('chat pies label every slice in place: ASCII fills, no legend, and no anonymous slices', () => {
+  const data = [['Chrome', 64], ['Safari', 19], ['Edge', 5], ['Firefox', 3], ['Other', 9]].map(([name, share]) => ({ name, share }));
+  const pie = legend => JSON.stringify({ ...(legend === undefined ? {} : { legend }), marks: [{ type: 'arc', data, channels: { y: 'share', fill: 'name' } }] });
+  // Mutation: drop the skill's `legend: false` default or its `shades` -> red.
+  const chat = success('charts', pie());
+  assert.doesNotMatch(chat.text, /[█░▚╱▌═▓▒]/u);
+  for (const glyph of ['#', '=', '+', ':', '.']) assert.ok(chat.text.includes(glyph), glyph);
+  for (const [name] of data.map(row => [row.name])) assert.equal(chat.text.split(name).length - 1, 1, name);
+  const legend = success('charts', pie(true));
+  assert.equal(legend.text.split('Chrome').length - 1, 2);
+  // Mutation: drop the unlabeled-slice refusal -> red.
+  const thin = run('charts', JSON.stringify({ type: 'arc', data: [{ name: 'Big', v: 97 }, { name: 'Tiny', v: 1 }, { name: 'Rest', v: 2 }], channels: { y: 'v', fill: 'name' } }));
+  assert.equal(thin.status, 1);
+  assert.equal(thin.diagnostic.code, 'GLYPH_SKILL_UNFIT');
+  assert.match(thin.diagnostic.error, /Tiny · 1%/u);
+  assert.equal(run('charts', JSON.stringify({ legend: true, marks: [{ type: 'arc', data: [{ name: 'Big', v: 97 }, { name: 'Tiny', v: 1 }, { name: 'Rest', v: 2 }], channels: { y: 'v', fill: 'name' } }] })).status, 0);
+});
+
+test('chat heatmaps render a bare braille-to-block grid with a range key', () => {
+  const data = ['Mon', 'Tue', 'Wed'].flatMap((day, d) => ['00', '01', '02', '03'].map((hour, h) => ({ day, hour, v: d * 4 + h })));
+  const heatmap = extra => JSON.stringify({ ...extra, marks: [{ type: 'cell', data, channels: { x: 'hour', y: 'day', fill: 'v' } }] });
+  // Mutation: drop the skill's `cellRamp` or its bare axes -> red.
+  const chat = success('charts', heatmap({}));
+  assert.doesNotMatch(chat.text, /[│┤└─┬]/u);
+  assert.match(chat.text, /^ *0 ⠂⠂⠢⠢⠪⠪⡪⡪⣺⣺⣿⣿▒▒▓▓██ 11$/mu);
+  // A spec that asks for an axis line keeps it.
+  assert.match(success('charts', heatmap({ axes: { y: { line: true } } })).text, /┤/u);
+  // ASCII keeps the library's 7-bit ramp.
+  assert.match(success('charts', heatmap({}), ['--charset', 'ascii']).text, /^ *0 \.\.::\+\+\*\*%%##@@ 11$/mu);
+});
+
 test('a chart file and mark spec render at the explicit narrow size; stdout remains pure text', async () => {
   const input = JSON.stringify({ type: 'bar', data: [{ month: 'Jan', value: 12 }, { month: 'Feb', value: 18 }], channels: { x: 'month', y: 'value' } });
   const file = join(directory, 'chart.json');
@@ -129,7 +211,7 @@ test('a chart file and mark spec render at the explicit narrow size; stdout rema
   assert.equal(text.stdout, `${output.text}\n`);
 });
 
-test('graph renders all original connections at a narrow budget and can paginate without omissions', () => {
+test('graph renders all original connections at a narrow budget and grows taller instead of paginating', () => {
   const input = 'flowchart LR\n A[Author] --> B[Render]\n B --> C[Chat]\n A --> D[Review]\n D --> C';
   const narrow = success('diagrams', input, ['--width', '28', '--height', '12']);
   assert.equal(narrow.kind, 'graph');
@@ -138,10 +220,12 @@ test('graph renders all original connections at a narrow budget and can paginate
   assert.equal(narrow.meta.edges.length, 4);
   assert.equal(narrow.budget.widthSource, 'explicit');
   assert.deepEqual(narrow.report.unroutable, []);
-  const paged = success('diagrams', 'flowchart LR\n A-->B\n B-->C\n C-->D\n D-->E', ['--width', '18', '--height', '10']);
-  assert.ok(paged.pages.length > 1);
-  for (const label of ['A', 'B', 'C', 'D', 'E']) assert.ok(paged.text.includes(label));
-  assert.equal(paged.meta.edges.length, 4);
+  const tall = success('diagrams', 'flowchart LR\n A-->B\n B-->C\n C-->D\n D-->E', ['--width', '18', '--height', '10']);
+  assert.equal(tall.pages.length, 1);
+  assert.ok(tall.columns <= 18);
+  assert.ok(tall.pages[0].rows > 10);
+  for (const label of ['A', 'B', 'C', 'D', 'E']) assert.ok(tall.text.includes(label));
+  assert.equal(tall.meta.edges.length, 4);
 });
 
 test('graph JSON uses the same renderer as Mermaid', () => {
@@ -151,17 +235,18 @@ test('graph JSON uses the same renderer as Mermaid', () => {
   assert.equal(output.meta.edges.length, 1);
 });
 
-test('sequence autodetection and explicit sequence JSON retain every message across pages', () => {
+test('sequence autodetection and explicit sequence JSON keep every message in one taller panel', () => {
   const mermaid = 'sequenceDiagram\n participant A\n participant B\n A->>B: One\n B-->>A: Two\n A->>B: Three';
   const output = success('diagrams', mermaid, ['--height', '6']);
   assert.equal(output.kind, 'sequence');
-  assert.equal(output.pages.length, 3);
+  assert.equal(output.pages.length, 1);
+  assert.ok(output.pages[0].rows > 6);
   for (const label of ['One', 'Two', 'Three']) assert.match(output.text, new RegExp(label));
   const json = success('diagrams', JSON.stringify({ participants: [{ id: 'a', label: 'Alpha' }, { id: 'b', label: 'Beta' }], messages: [{ from: 'a', to: 'b', label: 'Hello' }] }), ['--kind', 'sequence']);
   assert.match(json.text, /Hello/);
 });
 
-test('lane pagination retains every node and its connector row', () => {
+test('lane histories grow taller instead of splitting, and read oldest first on request', () => {
   const input = JSON.stringify({ nodes: [
     { id: 'c', label: 'Merge', parents: ['a', 'b'] },
     { id: 'b', label: 'Branch', parents: ['a'] },
@@ -169,12 +254,19 @@ test('lane pagination retains every node and its connector row', () => {
   ] });
   const output = success('diagrams', input, ['--kind', 'lanes', '--height', '2']);
   assert.equal(output.kind, 'lanes');
-  assert.equal(output.pages.length, 3);
+  assert.equal(output.pages.length, 1);
+  assert.ok(output.pages[0].rows > 2);
   for (const label of ['Merge', 'Branch', 'Start']) assert.match(output.text, new RegExp(label));
-  const failed = run('diagrams', input, ['--kind', 'lanes', '--height', '1']);
-  assert.equal(failed.status, 1);
-  assert.equal(failed.stdout, '');
-  assert.equal(failed.diagnostic.code, 'GLYPH_SKILL_UNFIT');
+  const first = text => text.split('\n').find(line => /Merge|Branch|Start/.test(line));
+  assert.match(first(output.text), /Merge/);
+  assert.match(first(success('diagrams', input, ['--kind', 'lanes', '--order', 'oldest-first']).text), /Start/);
+  // Mutation: ask for a repair hint without an error code -> a bad flag crashes with a stack trace instead of JSON.
+  for (const args of [['--kind', 'lanes', '--order', 'sideways'], ['--kind', 'bogus']]) {
+    const failed = run('diagrams', input, args);
+    assert.equal(failed.status, 1);
+    assert.equal(failed.stdout, '');
+    assert.match(failed.diagnostic.error, /--(order|kind) must be/);
+  }
 });
 
 test('malformed specs and impossible sizes fail before any misleading text is emitted', () => {
@@ -221,10 +313,11 @@ test('charts refuse folded stages, lost slices, and folded, dropped, or unroutab
 
 test('diagram branch labels cannot disappear on a successful render', () => {
   const input = 'flowchart TB\n A{Valid?} -->|yes| B[Save]\n A -->|no| C[Reject]\n B -->|retry later| A';
+  // Too narrow for every label: refused outright, never pasted with one missing.
   const failed = run('diagrams', input, ['--width', '20', '--height', '12']);
   assert.equal(failed.status, 1, failed.stderr);
   assert.equal(failed.stdout, '');
-  assert.ok(failed.diagnostic.report.ledger.some(entry => entry.code === 'label-dropped' && entry.detail.text === 'retry later'));
+  assert.equal(failed.diagnostic.code, 'GLYPH_SKILL_UNFIT');
   const complete = success('diagrams', input, ['--width', '28', '--height', '12']);
   for (const label of ['yes', 'no', 'retry later']) assert.ok(complete.text.includes(label));
 });
