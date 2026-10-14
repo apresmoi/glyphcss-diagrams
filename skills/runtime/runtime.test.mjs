@@ -323,13 +323,10 @@ test('charts refuse folded stages, lost slices, and folded, dropped, or unroutab
 
 test('diagram branch labels cannot disappear on a successful render', () => {
   const input = 'flowchart TB\n A{Valid?} -->|yes| B[Save]\n A -->|no| C[Reject]\n B -->|retry later| A';
-  // Too narrow for every label: refused outright, never pasted with one missing.
-  const failed = run('diagrams', input, ['--width', '28', '--height', '12']);
-  assert.equal(failed.status, 1, failed.stderr);
-  assert.equal(failed.stdout, '');
-  assert.equal(failed.diagnostic.code, 'GLYPH_SKILL_UNFIT');
-  const complete = success('diagrams', input, ['--width', '40', '--height', '16']);
-  for (const label of ['yes', 'no', 'retry later']) assert.ok(complete.text.includes(label));
+  for (const [width, height] of [['28', '12'], ['40', '16']]) {
+    const complete = success('diagrams', input, ['--width', width, '--height', height]);
+    for (const label of ['yes', 'no', 'retry later']) assert.ok(complete.text.includes(label));
+  }
 });
 
 test('acceptance checks each loss independently while allowing ordinary layout and abbreviation reports', () => {
