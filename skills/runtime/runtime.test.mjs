@@ -246,6 +246,16 @@ test('sequence autodetection and explicit sequence JSON keep every message in on
   assert.match(json.text, /Hello/);
 });
 
+test('state diagrams render through the graph path with start and end dots', () => {
+  const mermaid = 'stateDiagram-v2\n  [*] --> Pending\n  Pending --> Paid : pay\n  Paid --> Paid : partial refund\n  Paid --> [*]';
+  const output = success('diagrams', mermaid);
+  assert.equal(output.kind, 'graph');
+  assert.equal(output.pages.length, 1);
+  for (const label of ['Pending', 'Paid', 'pay', 'partial refund', '●', '◉']) assert.match(output.text, new RegExp(label));
+  const ascii = success('diagrams', mermaid, ['--charset', 'ascii']);
+  assert.doesNotMatch(ascii.text, /[^\x20-\x7e\n]/u);
+});
+
 test('lane histories grow taller instead of splitting, and read oldest first on request', () => {
   const input = JSON.stringify({ nodes: [
     { id: 'c', label: 'Merge', parents: ['a', 'b'] },
@@ -314,11 +324,11 @@ test('charts refuse folded stages, lost slices, and folded, dropped, or unroutab
 test('diagram branch labels cannot disappear on a successful render', () => {
   const input = 'flowchart TB\n A{Valid?} -->|yes| B[Save]\n A -->|no| C[Reject]\n B -->|retry later| A';
   // Too narrow for every label: refused outright, never pasted with one missing.
-  const failed = run('diagrams', input, ['--width', '20', '--height', '12']);
+  const failed = run('diagrams', input, ['--width', '28', '--height', '12']);
   assert.equal(failed.status, 1, failed.stderr);
   assert.equal(failed.stdout, '');
   assert.equal(failed.diagnostic.code, 'GLYPH_SKILL_UNFIT');
-  const complete = success('diagrams', input, ['--width', '28', '--height', '12']);
+  const complete = success('diagrams', input, ['--width', '40', '--height', '16']);
   for (const label of ['yes', 'no', 'retry later']) assert.ok(complete.text.includes(label));
 });
 

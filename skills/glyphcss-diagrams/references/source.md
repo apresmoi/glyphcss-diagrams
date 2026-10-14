@@ -2,6 +2,10 @@
 
 Pass a file path or `-` for stdin. Mermaid kind is detected; for JSON choose `--kind graph` (default), `--kind sequence`, or `--kind lanes`.
 
+## State diagrams
+
+Mermaid `stateDiagram`/`stateDiagram-v2` renders as a graph: states are rounded boxes, `[*]` is a start dot (`●`) or end dot (`◉`), and `A --> B : event` labels the transition. A state may transition to itself (`A --> A : retry`); the loop sits beside the box. Supported: `state "Long name" as Id`, `Id : description`, nested `state Parent { ... }` (with its own `[*]`), `<<choice>>`, `direction`, and inert `hide empty description`/`scale`. Notes, `--` concurrent regions and `<<fork>>`/`<<join>>` are rejected by name; describe them in prose instead. A transition into or out of a nested state attaches to its inner start or end dot.
+
 ## Graphs
 
 Mermaid supports `flowchart`/`graph`, directions `TB`/`TD`/`LR`/`BT`/`RL`, node shapes, labeled arrows, dotted/thick/undirected edges, chains, fan-out, and `subgraph ... end`. Styling directives are inert data. Unsupported Mermaid families must be represented using a supported form with any semantic loss explained.
