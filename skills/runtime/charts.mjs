@@ -1,5 +1,7 @@
-import { renderGlyphChart, glyphChartRepairHint, normalizeGlyphChartInput } from '@glyphcss/charts';
-import { CHART_SIZES, parseJson, runCli } from './common.mjs';
+import { renderGlyphChart, glyphChartRepairHint, normalizeGlyphChartInput, renderGlyphChartMermaid } from '@glyphcss/charts';
+import { renderGlyphDiagram } from '@glyphcss/diagrams';
+import { renderGlyphSequence } from '@glyphcss/diagrams/sequence';
+import { CHART_SIZES, createGlyphMermaidRenderer, parseJson, runCli } from './common.mjs';
 
 const isTrend = mark => mark?.type === 'line' || mark?.type === 'area';
 const isBar = mark => mark?.type === 'bar';
@@ -54,10 +56,13 @@ function sizeHint(trends, bars, budget) {
   return `${reasons} crowd ${budget.width} x ${budget.height}; rerun with --size ${size}.`;
 }
 
+const mermaid = createGlyphMermaidRenderer({ chart: renderGlyphChartMermaid, graph: renderGlyphDiagram, sequence: renderGlyphSequence });
+
 await runCli({
   kind: 'chart',
   repairHint: glyphChartRepairHint,
   render: (text, cli, _options, budgetFor) => {
+    if (!/^\s*(?:[\[{"\d]|-(?:\d|\.)|(?:true|false|null)\s*$)/u.test(text)) return mermaid(text, cli, _options);
     const spec = normalizeGlyphChartInput(parseJson(text));
     const trends = spec.marks.filter(isTrend);
     const bars = spec.marks.filter(isBar);

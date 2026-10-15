@@ -1,6 +1,6 @@
 ---
 name: glyphcss-charts
-description: Use whenever a reply compares, trends, or breaks down numbers — bars, lines, scatter, histograms, heatmaps, funnels, sankey flows, shares of a whole — instead of a markdown table of figures or hand-drawn bars. Write a chart spec; the renderer returns a readable text chart with axes and labels, sized for chat or a terminal. Triggers on "chart", "plot", "graph the", "compare", "trend", "over time", "breakdown", "distribution", "funnel", "how much of".
+description: Use whenever a reply compares, trends, or breaks down numbers — bars, lines, scatter, histograms, heatmaps, funnels, sankey flows, shares of a whole — instead of a markdown table of figures or hand-drawn bars. Write a chart spec or supply Mermaid chart source (pie, xychart, sankey, quadrantChart, gantt, radar, treemap, journey, timeline, packet, kanban); the renderer returns a readable text chart with axes and labels, sized for chat or a terminal. Triggers on "chart", "plot", "graph the", "compare", "trend", "over time", "breakdown", "distribution", "funnel", "how much of".
 ---
 
 # Glyphcss charts
@@ -18,6 +18,12 @@ node "<skill-dir>/scripts/render.mjs" - <<'JSON'
 {"title":"Monthly revenue","axes":{"y":{"title":"Revenue ($k)"}},"marks":[{"type":"bar","data":[{"month":"Jan","revenue":12},{"month":"Feb","revenue":18},{"month":"Mar","revenue":15}],"channels":{"x":"month","y":"revenue"}}]}
 JSON
 ```
+
+## Mermaid input
+
+Both render scripts accept Mermaid directly and choose the public renderer from its declaration. Supported diagrams: flowchart/graph, stateDiagram, sequenceDiagram, classDiagram, erDiagram, mindmap, gitGraph, block, architecture, requirementDiagram and C4Context/Container/Component/Dynamic/Deployment. Supported charts: pie, xychart, sankey, quadrantChart, gantt, radar, treemap, journey, timeline, packet and kanban (including documented beta headers). Existing JSON input stays supported.
+
+Mermaid defaults to 72 columns, box for chat and braille for `--target web`; `--charset` overrides it. Mermaid charts use the library's target look and source ledger, rather than the JSON chart conveniences below. Source configuration, callbacks and URLs stay inert. `--kind`/`--order` do not override Mermaid declarations; `--size` in the charts script sets a cell budget, including for Mermaid diagrams. Inapplicable supplied options produce `mermaid-option-ignored`. Ordinary degradation notes remain visible on stderr; impossible budgets still fail rather than silently losing content.
 
 ## Fit the destination automatically
 

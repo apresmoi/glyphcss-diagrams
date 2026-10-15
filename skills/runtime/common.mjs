@@ -5,6 +5,29 @@ import { parseArgs } from 'node:util';
 // heightens from its data, and an explicit width or height still wins.
 export const CHART_SIZES = { compact: [48, 16], wide: [72, 16], tall: [48, 24], full: [72, 24] };
 
+// Dependencies are injected so the shared dispatch contract can be tested
+// against public renderer exports without regenerating portable bundles.
+export function createGlyphMermaidRenderer({ chart, graph, sequence }) {
+  return async (source, cli, options) => {
+    try {
+      const result = chart(source, options);
+      if (cli.kind || cli.order) result.report.ledger.push({ code: 'mermaid-option-ignored', message: '--kind/--order are diagram JSON/lane options; Mermaid charts select their own renderer.' });
+      return { kind: 'chart', result };
+    } catch (error) {
+      if (error.code !== 'GLYPH_MERMAID_NOT_CHART_TYPE') throw error;
+    }
+    const body = source.replace(/^\uFEFF/u, '')
+      .replace(/^\s*---\s*\r?\n[\s\S]*?\r?\n---\s*(?:\r?\n|$)/u, '')
+      .replace(/^(?:\s|%%\{[\s\S]*?\}%%|%%[^\n]*(?:\n|$))*/u, '');
+    const header = body.match(/^[\w-]+/u)?.[0];
+    const kind = header === 'sequenceDiagram' ? 'sequence' : header?.toLowerCase() === 'gitgraph' ? 'lanes' : 'graph';
+    const result = await (kind === 'sequence' ? sequence : graph)(kind === 'sequence' ? body : source, { ...options, autoDirection: true, detail: 'faithful', overflow: 'expand' });
+    if (kind === 'sequence' && body !== source) result.report.ledger.push({ code: 'mermaid-ignored', message: 'Sequence preamble metadata and initialization are inert; the native sequence title applies.' });
+    if (cli.kind || cli.order) result.report.ledger.push({ code: 'mermaid-option-ignored', message: '--kind/--order do not override Mermaid declarations; source ordering and native layout apply.' });
+    return { kind, result };
+  };
+}
+
 export function parseCli(args, diagrams = false) {
   const { values, positionals } = parseArgs({
     args,
@@ -24,7 +47,7 @@ export function parseCli(args, diagrams = false) {
     }
     values[key] = Number(values[key]);
   }
-  if (!['chat', 'terminal'].includes(values.target)) throw new Error('--target must be chat or terminal.');
+  if (!['chat', 'terminal', 'web'].includes(values.target)) throw new Error('--target must be chat, terminal, or web.');
   if (values.charset && !['ascii', 'box', 'blocks', 'braille'].includes(values.charset)) {
     throw new Error('--charset must be ascii, box, blocks, or braille.');
   }
@@ -42,6 +65,7 @@ export function parseCli(args, diagrams = false) {
 
 export function resolveBudget(options, output = process.stdout, preferredSize) {
   const terminal = options.target === 'terminal';
+  const web = options.target === 'web';
   const size = options.size ?? (terminal ? undefined : preferredSize);
   const dimension = (name, ttyName, margin, fallback) => {
     if (options[name] !== undefined) return [options[name], 'explicit'];
@@ -59,7 +83,7 @@ export function resolveBudget(options, output = process.stdout, preferredSize) {
   return {
     width, height, widthSource, heightSource,
     target: options.target,
-    charset: options.charset ?? (terminal ? 'braille' : 'box'),
+    charset: options.charset ?? (terminal || web ? 'braille' : 'box'),
     ...(size && (widthSource !== 'explicit' || heightSource !== 'explicit') ? { size } : {}),
   };
 }
@@ -89,9 +113,18 @@ export function measurePage(raw) {
 
 export function assertGraphCoverage(result) {
   const nodes = new Set(result.pages.flatMap(page => page.layout.nodes.map(node => node.id)));
-  const edges = new Set(result.pages.flatMap(page => page.routes.map(route => route.edge.id)));
+  const routes = [...new Map(result.pages.flatMap(page => page.routes.map(route => [route.edge.id, route.edge]))).values()];
   const missingNodes = result.meta.nodes.filter(node => !nodes.has(node.id)).map(node => node.id);
-  const missingEdges = result.meta.edges.filter(edge => !edges.has(edge.id)).map(edge => edge.id);
+  // Native block metadata keeps optional authored ids; routes have generated
+  // ids. Match id-less edges by semantics, consuming each occurrence once.
+  const signature = edge => JSON.stringify([edge.from, edge.to, edge.label ?? '', edge.style ?? 'solid', edge.startHead, edge.endHead]);
+  const missingEdges = result.meta.edges.filter(edge => {
+    if (edge.invisible) return false;
+    const index = routes.findIndex(route => edge.id !== undefined ? route.id === edge.id : signature(route) === signature(edge));
+    if (index < 0) return true;
+    routes.splice(index, 1);
+    return false;
+  }).map(edge => edge.id ?? `${edge.from} -> ${edge.to}`);
   if (missingNodes.length || missingEdges.length) {
     throw Object.assign(new Error('Some diagram nodes or connections were not rendered.'), {
       code: 'GLYPH_SKILL_UNFIT', missingNodes, missingEdges,
@@ -132,7 +165,7 @@ export async function runCli({ kind, render, repairHint, diagrams = false }) {
   try {
     const options = parseCli(process.argv.slice(2), diagrams);
     if (options.help) {
-      process.stdout.write(`Usage: node render.mjs [input-file|-] [--width N] [--height N]\n  [--target chat|terminal] [--charset ascii|box|blocks|braille] [--json]${diagrams ? '\n  [--kind graph|sequence|lanes] [--order newest-first|oldest-first]' : '\n  [--size compact|wide|tall|full]'}\n\nInput: ${diagrams ? 'Mermaid flowchart/sequence, or diagram JSON.' : 'Chart JSON: a plot, mark, mark array, or number array.'}\nDefault: monochrome chat, 72 columns x 24 rows per page${diagrams ? '' : '; line and area charts start compact (48 x 16)'}.\nTerminal: output TTY minus margins, otherwise 80 x 24.\nText goes to stdout; budget and diagnostics go to stderr. --json includes all pages.\n`);
+      process.stdout.write(`Usage: node render.mjs [input-file|-] [--width N] [--height N]\n  [--target chat|terminal|web] [--charset ascii|box|blocks|braille] [--json]${diagrams ? '\n  [--kind graph|sequence|lanes] [--order newest-first|oldest-first]' : '\n  [--size compact|wide|tall|full]'}\n\nInput: ${diagrams ? 'Any supported Mermaid source, or diagram JSON.' : 'Any supported Mermaid source, or chart JSON: a plot, mark, mark array, or number array.'}\nDefault: monochrome chat, 72 columns x 24 rows per page${diagrams ? '' : '; line and area charts start compact (48 x 16)'}.\nTerminal: output TTY minus margins, otherwise 80 x 24.\nText goes to stdout; budget and diagnostics go to stderr. --json includes all pages.\n`);
       return;
     }
     budget = resolveBudget(options);

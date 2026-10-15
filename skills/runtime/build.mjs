@@ -69,6 +69,7 @@ async function notices(metafile) {
   return entries.join('\n\n--------------------\n\n');
 }
 
+// Both entrypoints import the shared Mermaid dispatcher and public readers.
 for (const name of ['charts', 'diagrams']) {
   const outdir = join(skillRoot, `skills/glyphcss-${name}/scripts`);
   await mkdir(outdir, { recursive: true });

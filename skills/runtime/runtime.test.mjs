@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { copyFile, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { after, before, test } from 'node:test';
-import { assertGraphCoverage, measurePage, prepareResult, resolveBudget } from './common.mjs';
+import { assertGraphCoverage, createGlyphMermaidRenderer, measurePage, parseCli, prepareResult, resolveBudget } from './common.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 let directory;
@@ -360,4 +360,133 @@ test('trimming preserves left indentation; output guards reject overflow, contro
   assert.doesNotThrow(() => assertGraphCoverage(graph));
   graph.pages[0].routes = [];
   assert.throws(() => assertGraphCoverage(graph), error => error.code === 'GLYPH_SKILL_UNFIT' && error.missingEdges[0] === 'e');
+});
+
+
+test('Mermaid dispatch uses only the named not-chart signal and preserves source and target options', async () => {
+  const calls = [];
+  const result = () => ({ text: 'ok', report: { ledger: [] } });
+  const render = createGlyphMermaidRenderer({
+    chart: (source, options) => {
+      calls.push(['chart', source, options]);
+      if (source.includes('pie')) return result();
+      if (source.includes('badChart')) throw Object.assign(new Error('syntax'), { code: 'GLYPH_MERMAID_SYNTAX' });
+      throw Object.assign(new Error('not chart'), { code: 'GLYPH_MERMAID_NOT_CHART_TYPE' });
+    },
+    graph: (source, options) => { calls.push(['graph', source, options]); return result(); },
+    sequence: (source, options) => { calls.push(['sequence', source, options]); return result(); },
+  });
+  const options = { target: 'web', width: 72, charset: 'braille', color: 'none' };
+  for (const [source, kind] of [
+    ['pie\n"A": 1', 'chart'],
+    ['\uFEFF---\ntitle: X\n---\n%% comment\n%%{init: {\n}}%%\nsequenceDiagram\n A->>B: Hello', 'sequence'],
+    ['gitGraph\n commit', 'lanes'], ['classDiagram\n class A', 'graph'],
+  ]) {
+    const output = await render(source, {}, options);
+    assert.equal(output.kind, kind);
+    assert.equal(calls.at(-1)[1], kind === 'sequence' ? 'sequenceDiagram\n A->>B: Hello' : source);
+    assert.equal(calls.at(-1)[2].target, 'web');
+    assert.equal(calls.at(-1)[2].charset, 'braille');
+  }
+  const count = calls.length;
+  await assert.rejects(render('badChart', {}, options), { code: 'GLYPH_MERMAID_SYNTAX' });
+  assert.equal(calls.length, count + 1);
+  assert.equal((await render('pie', { kind: 'graph', order: 'newest-first' }, options)).result.report.ledger[0].code, 'mermaid-option-ignored');
+  assert.equal(resolveBudget(parseCli(['--target', 'web'])).charset, 'braille');
+});
+
+test('both source entrypoints dispatch Mermaid and retain JSON without an upstream checkout or rebuild', async () => {
+  const sourceDirectory = await mkdtemp(join(tmpdir(), 'glyphcss-source-'));
+  try {
+    // Load the actual entrypoint modules, replacing only native renderer imports
+    // and process I/O. Native rendering is covered in the library's own tests.
+    await writeFile(join(sourceDirectory, 'native.mjs'), `
+      export const calls = [], callbacks = [];
+      export let chartHeader = '';
+      export function acceptChart(header) { chartHeader = header; }
+      const render = kind => (source, options) => {
+        calls.push({ kind, source, options });
+        return { text: 'native result', report: { ledger: [] } };
+      };
+      export const renderGlyphChart = render('chart-json');
+      export function renderGlyphChartMermaid(source, options) {
+        if (source === 'badChart') throw Object.assign(new Error('syntax'), { code: 'GLYPH_MERMAID_SYNTAX' });
+        if (!source.includes(chartHeader) || !chartHeader) throw Object.assign(new Error('not chart'), { code: 'GLYPH_MERMAID_NOT_CHART_TYPE' });
+        return render('chart')(source, options);
+      }
+      export const renderGlyphDiagram = render('graph');
+      export const renderGlyphSequence = render('sequence');
+      export const renderGlyphLaneDag = render('lanes');
+      export const normalizeGlyphChartInput = input => Array.isArray(input)
+        ? { marks: [{ type: 'line', data: input, channels: {} }] } : input;
+      export const glyphChartRepairHint = () => 'chart';
+      export const glyphDiagramRepairHint = () => 'graph';
+      export const glyphSequenceRepairHint = () => 'sequence';
+      export const glyphLaneDagRepairHint = () => 'lanes';
+    `);
+    await writeFile(join(sourceDirectory, 'common.mjs'), `
+      export * from ${JSON.stringify(new URL('./common.mjs', import.meta.url).href)};
+      import { callbacks } from './native.mjs';
+      export async function runCli(options) { callbacks.push(options); }
+    `);
+    const native = await import(pathToFileURL(join(sourceDirectory, 'native.mjs')).href);
+    for (const name of ['diagrams', 'charts']) {
+      const source = await readFile(new URL(`./${name}.mjs`, import.meta.url), 'utf8');
+      await writeFile(join(sourceDirectory, `${name}.mjs`), source.replace(/'@glyphcss\/(?:charts|diagrams(?:\/sequence|\/lanes)?)'/gu, "'./native.mjs'"));
+      await import(pathToFileURL(join(sourceDirectory, `${name}.mjs`)).href);
+    }
+    assert.equal(native.callbacks.length, 2);
+    const graphHeaders = ['flowchart', 'graph', 'sequenceDiagram', 'stateDiagram', 'stateDiagram-v2', 'classDiagram', 'erDiagram', 'mindmap', 'gitGraph', 'block', 'block-beta', 'architecture', 'architecture-beta', 'requirementDiagram', 'C4Context', 'C4Container', 'C4Component', 'C4Dynamic', 'C4Deployment'];
+    const chartHeaders = ['pie', 'xychart', 'xychart-beta', 'sankey', 'sankey-beta', 'quadrantChart', 'gantt', 'radar', 'radar-beta', 'treemap', 'treemap-beta', 'journey', 'timeline', 'packet', 'packet-beta', 'kanban'];
+    for (const callback of native.callbacks) {
+      for (const header of [...graphHeaders, ...chartHeaders]) for (const target of ['chat', 'web']) {
+        native.acceptChart(chartHeaders.includes(header) ? header : '');
+        const source = `${header}\n Example`;
+        const cli = { target, width: 72, height: 24 };
+        const options = { ...resolveBudget(cli), color: 'none' };
+        const rendered = await callback.render(source, cli, options, () => options);
+        const expected = chartHeaders.includes(header) ? 'chart' : header === 'sequenceDiagram' ? 'sequence' : header === 'gitGraph' ? 'lanes' : 'graph';
+        assert.equal(rendered.kind, expected, `${header}/${target}`);
+        const call = native.calls.at(-1);
+        assert.equal(call.kind, expected === 'lanes' ? 'graph' : expected);
+        assert.equal(call.source, source);
+        assert.equal(call.options.width, 72);
+        assert.equal(call.options.target, target);
+        assert.equal(call.options.charset, target === 'web' ? 'braille' : 'box');
+      }
+      for (const header of ['pie', 'sequenceDiagram']) {
+        native.acceptChart(header === 'pie' ? header : '');
+        const body = `${header}\n Example`;
+        const source = `\uFEFF---\ntitle: Metadata\n---\n%%{init: {\n "theme": "dark"\n}}%%\n${body}`;
+        const options = { ...resolveBudget({ target: 'chat' }), color: 'none' };
+        await callback.render(source, {}, options, () => options);
+        assert.equal(native.calls.at(-1).source, header === 'pie' ? source : body);
+      }
+      await assert.rejects(async () => callback.render('badChart', {}, {}, () => ({})), { code: 'GLYPH_MERMAID_SYNTAX' });
+    }
+    const cli = { target: 'chat' };
+    const budgetFor = size => ({ ...resolveBudget(cli, {}, size), color: 'none' });
+    const graph = { nodes: [{ id: 'a', label: 'Alpha' }], edges: [] };
+    await native.callbacks[0].render(JSON.stringify(graph), cli, budgetFor(), budgetFor);
+    assert.deepEqual(native.calls.at(-1).source, graph);
+    assert.equal(native.calls.at(-1).kind, 'graph');
+    await native.callbacks[1].render('[3,5,2]', cli, budgetFor(), budgetFor);
+    assert.deepEqual(native.calls.at(-1).source.marks[0].data, [3, 5, 2]);
+    assert.equal(native.calls.at(-1).kind, 'chart-json');
+    assert.equal(native.calls.at(-1).options.charset, 'braille');
+  } finally { await rm(sourceDirectory, { recursive: true, force: true }); }
+});
+
+
+test('graph coverage matches id-less block metadata without allowing a lost or duplicate edge', () => {
+  const edge = { from: 'a', to: 'b', label: 'send' };
+  const result = { meta: { nodes: [{ id: 'a' }, { id: 'b' }], edges: [edge] }, pages: [{ layout: { nodes: [{ id: 'a' }, { id: 'b' }] }, routes: [{ edge: { ...edge, id: 'generated' } }] }] };
+  assert.doesNotThrow(() => assertGraphCoverage(result));
+  result.meta.edges.push({ ...edge });
+  assert.throws(() => assertGraphCoverage(result), { code: 'GLYPH_SKILL_UNFIT' });
+  result.meta.edges.pop();
+  result.pages[0].routes = [];
+  assert.throws(() => assertGraphCoverage(result), { code: 'GLYPH_SKILL_UNFIT' });
+  result.meta.edges = [{ ...edge, invisible: true }];
+  assert.doesNotThrow(() => assertGraphCoverage(result));
 });

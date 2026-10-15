@@ -11,7 +11,7 @@ By default, author Mermaid or graph JSON, run the bundled renderer, and put its 
 
 - Use a flowchart for dependencies or decisions, a sequence for ordered exchanges, a state diagram for the states one thing moves between, and lanes for a main line that forks and rejoins over time: git histories, plans whose workstreams split and converge, branching stories, revision or experiment lineage. Use a top-down flowchart for family trees and other graphs where most nodes join several lines. Use short meaningful labels; label decision branches. Preserve the user's nodes, connections, and direction unless automatic orientation is appropriate.
 - Keep a graph to about nine nodes. When several sources feed one hub, write them as one list node (`S[Star sources<br>Bar: Galaxia<br>Arms: Reid 2019] --> stars`) instead of a box each; box the hubs. A bigger picture becomes an overview plus detail diagrams.
-- Start with Mermaid `flowchart`/`graph`. The renderer also detects `sequenceDiagram` and `stateDiagram`/`stateDiagram-v2`. For JSON authoring, sequence details, or lanes, read [the source reference](references/source.md).
+- Start with Mermaid `flowchart`/`graph`. Other Mermaid headers dispatch automatically, including sequences, states, Git histories and charts. For JSON authoring, sequence details, or lanes, read [the source reference](references/source.md).
 
 ```sh
 node "<skill-dir>/scripts/render.mjs" - <<'MERMAID'
@@ -20,6 +20,12 @@ flowchart LR
   agent --> answer[Answer]
 MERMAID
 ```
+
+## Mermaid input
+
+Both render scripts accept Mermaid directly and choose the public renderer from its declaration. Supported diagrams: flowchart/graph, stateDiagram, sequenceDiagram, classDiagram, erDiagram, mindmap, gitGraph, block, architecture, requirementDiagram and C4Context/Container/Component/Dynamic/Deployment. Supported charts: pie, xychart, sankey, quadrantChart, gantt, radar, treemap, journey, timeline, packet and kanban (including documented beta headers). Existing JSON input stays supported.
+
+Mermaid defaults to 72 columns, box for chat and braille for `--target web`; `--charset` overrides it. Mermaid charts use the library's target look and source ledger, rather than the JSON chart conveniences in the charts skill. Source configuration, callbacks and URLs stay inert. `--kind`/`--order` do not override Mermaid declarations; `--size` in the charts script sets a cell budget, including for Mermaid diagrams. Inapplicable supplied options produce `mermaid-option-ignored`. Ordinary degradation notes remain visible on stderr; impossible budgets still fail rather than silently losing content.
 
 ## Fit the destination automatically
 
