@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 // Renderer packages, their dependencies, and LICENSE stay in the upstream checkout.
 const skillRoot = fileURLToPath(new URL('../../', import.meta.url));
 const aliases = {
+  '@glyphcss/core/mermaid': 'packages/core/src/mermaid/index.ts',
   '@glyphcss/charts': 'packages/charts/src/index.ts',
   '@glyphcss/diagrams/sequence': 'packages/diagrams/src/sequence/index.ts',
   '@glyphcss/diagrams/lanes': 'packages/diagrams/src/lanes/index.ts',

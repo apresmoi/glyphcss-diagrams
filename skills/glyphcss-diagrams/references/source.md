@@ -4,11 +4,11 @@ Pass a file path or `-` for stdin. Mermaid kind is detected; for JSON choose `--
 
 ## State diagrams
 
-Mermaid `stateDiagram`/`stateDiagram-v2` renders as a graph: states are rounded boxes, `[*]` is a start dot (`●`) or end dot (`◉`), and `A --> B : event` labels the transition. A state may transition to itself (`A --> A : retry`); the loop sits beside the box. Supported: `state "Long name" as Id`, `Id : description`, nested `state Parent { ... }` (with its own `[*]`), `<<choice>>`, `direction`, and inert `hide empty description`/`scale`. Notes, `--` concurrent regions and `<<fork>>`/`<<join>>` are rejected by name; describe them in prose instead. A transition into or out of a nested state attaches to its inner start or end dot.
+Mermaid `stateDiagram`/`stateDiagram-v2` renders as a graph: states are rounded boxes, `[*]` is a start dot (`●`) or end dot (`◉`), and `A --> B : event` labels the transition. A state may transition to itself (`A --> A : retry`); the loop sits beside the box. Supported: `state "Long name" as Id`, `Id : description`, nested `state Parent { ... }` (with its own `[*]`), `<<choice>>`, `direction`, and inert `hide empty description`/`scale`. Notes become description rows on the state (a composite note goes on its first child); side placement is logged as an approximation. `--` preserves concurrent regions with dashed dividers and independent start/end markers. `<<fork>>`/`<<join>>` preserve identity and branches using rounded boxes with literal stereotype labels, logged. Concurrent composite transitions attach once to the outer frame; other composite transitions attach to the inner start/end or first/last state. Labelled regions may rotate and stack to preserve captions at 72 columns. Nested direction is inherited and logged. Styles and configuration stay inert.
 
 ## Graphs
 
-Mermaid supports `flowchart`/`graph`, directions `TB`/`TD`/`LR`/`BT`/`RL`, node shapes, labeled arrows, dotted/thick/undirected edges, chains, fan-out, and `subgraph ... end`. Styling directives are inert data. Unsupported Mermaid families must be represented using a supported form with any semantic loss explained.
+Mermaid supports `flowchart`/`graph`/`flowchart-elk`, directions `TB`/`TD`/`LR`/`BT`/`RL`, node shapes, labeled arrows, dotted/thick/undirected edges, chains, fan-out, and `subgraph ... end`. Omitted direction defaults to `TB`. Styling directives are inert data. Class (`classDiagram`/`classDiagram-v2`) and ER diagrams reuse measured compartments and compact relation ends. Block/architecture (including beta headers), requirement and all five C4 headers reuse native graph families; unsupported styling, assets, port hints and exact UML typography degrade with ledger notes. Mindmaps use undirected trees; Mermaid gitGraph uses lanes. Layout aliases log native Dagre substitution.
 
 JSON uses this shape:
 
@@ -27,11 +27,11 @@ JSON uses this shape:
 }
 ```
 
-Nodes require unique `id` and `label`. Shapes: `rect`, `rounded`, `diamond`, `circle`, `stadium`, `subroutine`, `asymmetric`, `cylinder`. Edges use `from`/`to`, optional `id`, `label`, `style` (`solid`, `dotted`, `thick`, `undirected`), and numeric `priority`. Groups are `{"id","label","members":[node ids]}` in `groups`.
+Nodes require unique `id` and `label`. Shapes: `rect`, `rounded`, `diamond`, `circle`, `stadium`, `subroutine`, `asymmetric`, `cylinder`, `point`, `compartment` (member rows in `compartments`). Edges use `from`/`to`, optional `id`, `label`, `style` (`solid`, `dotted`, `thick`, `undirected`), and numeric `priority`. Groups are `{"id","label","members":[node ids]}` in `groups`.
 
 ## Sequences
 
-Mermaid `sequenceDiagram` supports `participant`, `actor`, `->>`/`-->>`, self-messages, `alt`/`else`/`opt`/`loop`/`end`, and `note over`. Frames render as condition bars, rather than enclosing UML boxes.
+Mermaid `sequenceDiagram` supports `participant`, `actor`, `->>`/`-->>`, self-messages, `alt`/`else`/`opt`/`loop`/`end`, and `note over`. Frames use enclosing sides, a top caption and dashed branch dividers. `par`/`and`, `critical`/`option`, `break`, side notes, autonumber and titles also work; activations, rect backgrounds and participant box grouping remain inert.
 
 JSON with `--kind sequence`:
 

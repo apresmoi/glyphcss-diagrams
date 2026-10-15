@@ -22,7 +22,7 @@ export function createGlyphMermaidRenderer({ chart, graph, sequence }) {
     const header = body.match(/^[\w-]+/u)?.[0];
     const kind = header === 'sequenceDiagram' ? 'sequence' : header?.toLowerCase() === 'gitgraph' ? 'lanes' : 'graph';
     const result = await (kind === 'sequence' ? sequence : graph)(kind === 'sequence' ? body : source, { ...options, autoDirection: true, detail: 'faithful', overflow: 'expand' });
-    if (kind === 'sequence' && body !== source) result.report.ledger.push({ code: 'mermaid-ignored', message: 'Sequence preamble metadata and initialization are inert; the native sequence title applies.' });
+    if (kind === 'sequence' && body !== source) result.report.ledger.push({ code: 'mermaid-degraded', message: 'Sequence preamble metadata and initialization are inert; the native sequence title applies.' });
     if (cli.kind || cli.order) result.report.ledger.push({ code: 'mermaid-option-ignored', message: '--kind/--order do not override Mermaid declarations; source ordering and native layout apply.' });
     return { kind, result };
   };

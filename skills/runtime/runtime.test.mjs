@@ -436,7 +436,7 @@ test('both source entrypoints dispatch Mermaid and retain JSON without an upstre
       await import(pathToFileURL(join(sourceDirectory, `${name}.mjs`)).href);
     }
     assert.equal(native.callbacks.length, 2);
-    const graphHeaders = ['flowchart', 'graph', 'sequenceDiagram', 'stateDiagram', 'stateDiagram-v2', 'classDiagram', 'erDiagram', 'mindmap', 'gitGraph', 'block', 'block-beta', 'architecture', 'architecture-beta', 'requirementDiagram', 'C4Context', 'C4Container', 'C4Component', 'C4Dynamic', 'C4Deployment'];
+    const graphHeaders = ['flowchart', 'flowchart-elk', 'graph', 'sequenceDiagram', 'stateDiagram', 'stateDiagram-v2', 'classDiagram', 'classDiagram-v2', 'erDiagram', 'mindmap', 'gitGraph', 'block', 'block-beta', 'architecture', 'architecture-beta', 'requirementDiagram', 'C4Context', 'C4Container', 'C4Component', 'C4Dynamic', 'C4Deployment'];
     const chartHeaders = ['pie', 'xychart', 'xychart-beta', 'sankey', 'sankey-beta', 'quadrantChart', 'gantt', 'radar', 'radar-beta', 'treemap', 'treemap-beta', 'journey', 'timeline', 'packet', 'packet-beta', 'kanban'];
     for (const callback of native.callbacks) {
       for (const header of [...graphHeaders, ...chartHeaders]) for (const target of ['chat', 'web']) {
