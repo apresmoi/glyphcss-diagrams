@@ -10,6 +10,17 @@ Mermaid `stateDiagram`/`stateDiagram-v2` renders as a graph: states are rounded 
 
 Mermaid supports `flowchart`/`graph`/`flowchart-elk`, directions `TB`/`TD`/`LR`/`BT`/`RL`, node shapes, labeled arrows, dotted/thick/undirected edges, chains, fan-out, and `subgraph ... end`. Omitted direction defaults to `TB`. Styling directives are inert data. Class (`classDiagram`/`classDiagram-v2`) and ER diagrams reuse measured compartments and compact relation ends. Block/architecture (including beta headers), requirement and all five C4 headers reuse native graph families; unsupported styling, assets, port hints and exact UML typography degrade with ledger notes. Mindmaps use undirected trees; Mermaid gitGraph uses lanes. Layout aliases log native Dagre substitution.
 
+Structure types, as short sketches (each renders at 72 columns):
+
+- `classDiagram`: `class Order { +id: string; +submit() }` (members on their own lines), relations `A <|-- B` inherit, `A *-- B` compose, `A o-- B` aggregate, `A --> B` associate, `A ..> B` depend, multiplicity in quotes (`Order "1" *-- "many" LineItem`). Ends draw as `△ ◆ ◇`; multiplicities move into the edge caption.
+- `erDiagram`: `CUSTOMER ||--o{ ORDER : places`, attributes in `CUSTOMER { string id PK; string email }` (one per line). Ends draw as `┼┼` one, `┼○` zero-or-one, `┼>` one-or-many, `○>` zero-or-many.
+- `C4Context` (and `Container`, `Component`, `Dynamic`, `Deployment`): `Person(buyer, "Buyer", "Places orders")`, `System(shop, "Shop")`, `System_Ext(psp, "Card processor")`, `Boundary(b, "Label") { … }`, `Rel(buyer, shop, "Orders via")`. Titles are inert: put the title in your reply. Keep descriptions short; each element is a box.
+- `architecture-beta`: `group cloud(cloud)[Cloud]`, `service api(server)[API] in cloud`, `api:R --> L:db`. Icons become text tags such as `[server]`; ports only hint at direction.
+- `mindmap`: indentation sets depth; `root((Topic))` then children. Renders as a left-to-right tree.
+- `block-beta`: `columns 3` then blocks in reading order, `a --> b` for links.
+- `requirementDiagram`: `requirement id { id: R1; text: …; risk: medium; verifymethod: test }`, `element t { type: test }`, `t - verifies -> id`.
+- `gitGraph`: `commit id: "…"`, `branch x`, `checkout x`, `merge x`, `cherry-pick id: "…"`. Reads oldest first, top to bottom.
+
 JSON uses this shape:
 
 ```json

@@ -24,3 +24,23 @@ For `line`, `area`, `bar`, `dot`, bare numeric data with empty channels uses ind
 - `legend: false` explicitly hides the legend. Do this only when the remaining labels identify every series.
 
 Only these mark types are supported. Do not invent `scatter`, `pie`, `heatmap`, or `histogram` type names: use `dot`, `arc`, `cell`, or an appropriate `bin` transform. The renderer reports tagged validation errors; correct the spec before presenting a result.
+
+## Mermaid charts
+
+These chart kinds take Mermaid source only; pipe it to the same script. Every example below renders at 72 columns.
+
+| Use | Source sketch |
+|---|---|
+| Schedule with dependencies | `gantt` · `dateFormat YYYY-MM-DD` · `section Build` · `API :done, api, 2026-04-01, 5d` · `QA :crit, after api, 3d` · `Go live :milestone, after qa, 0d` |
+| Dated milestones | `timeline` · `title Product history` · `2024 : Beta : First customers` (one line per period, events after `:`) |
+| Work by status | `kanban` · `todo[To do]` · indented `a[Search filters]@{ assigned: 'Mia', priority: 'High' }` |
+| Effort vs impact | `quadrantChart` · `x-axis Low effort --> High effort` · `y-axis Low impact --> High impact` · `quadrant-1 Plan` … `quadrant-4 Delegate` · `SSO: [0.3, 0.8]` |
+| Options scored on criteria | `radar-beta` · `axis speed[Speed], cost[Cost], …` · `curve a[Vendor A]{4, 3, 5}` · `max 5` |
+| Nested shares | `treemap-beta` · `"Product"` · indented `"Portal": 28` (indentation sets the level) |
+| Experience scored 1–5 | `journey` · `section Pay` · `Enter card: 2: Buyer, Payments` |
+| Binary header layout | `packet-beta` · `0-15: "Source port"` · `16-31: "Destination port"` (bit ranges, 32 per row) |
+
+- Gantt status tags (`done`, `active`, `crit`) and timeline/journey sections render as text; the ledger on stderr says so. That note is expected, not a failure.
+- In chat, radar becomes grouped bars per axis and quadrant points carry their labels; both are complete renders.
+- A treemap fills whatever height it is given: pass `--height` of about two rows per leaf plus one per branch (minimum 8) so a small tree is not stretched to 24 rows.
+- Keep kanban to 4 columns and 4 cards per column at 72 columns; split larger boards by column.

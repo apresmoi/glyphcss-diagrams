@@ -1,6 +1,6 @@
 ---
 name: glyphcss-charts
-description: Use whenever a reply compares, trends, or breaks down numbers — bars, lines, scatter, histograms, heatmaps, funnels, sankey flows, shares of a whole — instead of a markdown table of figures or hand-drawn bars. Write a chart spec or supply Mermaid chart source (pie, xychart, sankey, quadrantChart, gantt, radar, treemap, journey, timeline, packet, kanban); the renderer returns a readable text chart with axes and labels, sized for chat or a terminal. Triggers on "chart", "plot", "graph the", "compare", "trend", "over time", "breakdown", "distribution", "funnel", "how much of".
+description: Use whenever a reply compares, trends, or breaks down numbers — bars, lines, scatter, histograms, heatmaps, funnels, sankey flows, shares of a whole — or lays out a schedule, roadmap, task board, prioritisation matrix, multi-criteria comparison, budget hierarchy, user journey or bit/byte layout, instead of a markdown table or hand-drawn bars. Write a chart spec or Mermaid chart source (pie, xychart, sankey, quadrantChart, gantt, radar, treemap, journey, timeline, packet, kanban); the renderer returns a readable text chart sized for chat or a terminal. Triggers on "chart", "plot", "graph the", "compare", "trend", "over time", "breakdown", "distribution", "funnel", "how much of", "schedule", "gantt", "roadmap", "timeline", "kanban", "board", "prioritise", "2x2", "score", "radar", "treemap", "journey", "packet", "header layout".
 ---
 
 # Glyphcss charts
@@ -10,6 +10,7 @@ By default, author a chart spec, run the bundled renderer, and put its actual te
 ## Choose and render
 
 - Compare categories with bars; ordered trends with lines; relationships with dots; a matrix with cells; proportions with arcs; flows with Sankey; sequential attrition with a funnel. Use a table when exact values matter more than shape.
+- Write these as Mermaid (no JSON form): tasks with dates and dependencies → `gantt`; dated milestones or eras without durations → `timeline`; work items by status → `kanban`; items placed on two judged axes (effort/impact) → `quadrantChart`; a few options scored on 4–8 criteria → `radar`; nested shares of a budget or size → `treemap`; steps of an experience scored 1–5 → `journey`; fields of a binary header or record → `packet`. Examples for each are in [the spec reference](references/spec.md#mermaid-charts).
 - Keep the user's values, units, order, and series identities. Never invent missing values or silently aggregate to make a chart fit. Explain any requested aggregation.
 - A spec has `marks`, each with `type`, `data`, and `channels`. Channels name data fields. Start from this complete example; use [the spec reference](references/spec.md) for other marks, multiple series, transforms, or axes.
 
