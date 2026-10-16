@@ -160,6 +160,15 @@ export function prepareResult(kind, result, budget) {
   };
 }
 
+// Recovery steps measured on real failing inputs: dropping groups or splitting
+// rescues them; shortening labels or flipping direction rarely does.
+function unfitHint(diagrams) {
+  const steps = diagrams
+    ? 'Remove subgraphs, boundaries and other groups first. If it still fails, split into an overview plus detail diagrams of about 6-8 nodes each, repeating the nodes where they join, and tell the user.'
+    : 'Split a Sankey into stage ranges of at most three columns, repeating the shared nodes; for other charts choose a representation that supports every input value or split into complete smaller charts. Tell the user about the split.';
+  return `${steps} Do not silently omit or combine data, labels, or connections. If a reasonable input keeps failing, offer the user an issue report (references/issues.md).`;
+}
+
 export async function runCli({ kind, render, repairHint, diagrams = false }) {
   let budget, result;
   try {
@@ -184,7 +193,7 @@ export async function runCli({ kind, render, repairHint, diagrams = false }) {
     process.stderr.write(`${JSON.stringify({
       error: error.message, code: error.code ?? 'GLYPH_SKILL_ERROR',
       hint: error.code === 'GLYPH_SKILL_UNFIT'
-        ? 'Choose a representation that supports every input value, use a larger known destination budget, or author separate complete views and disclose the split. Do not silently omit or combine data, labels, or connections.'
+        ? unfitHint(diagrams)
         : error.code ? repairHint?.(error.code) : undefined,
       ...(budget ? { budget } : {}), ...(result ? { report: result.report } : {}),
       ...(error.missingNodes ? { missingNodes: error.missingNodes, missingEdges: error.missingEdges } : {}),

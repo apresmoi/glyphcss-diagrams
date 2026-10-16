@@ -37,5 +37,9 @@ Mermaid defaults to 72 columns, box for chat and braille for `--target web`; `--
 ## Check and deliver
 
 - Stdout is the rendered text; stderr is a JSON diagnostic report. `--json` returns pages, measured dimensions, budget, metadata, and report. A nonzero exit means no usable output.
-- Check every authored node and connection is represented and labels remain readable; inspect the text as well as diagnostics. If it cannot fit, split the source at meaningful boundaries, repeat boundary nodes, and state the split. Do not silently remove content or enlarge the width beyond the destination budget. If you give up on the renderer and draw by hand, say so and why.
+- Check every authored node and connection is represented and labels remain readable; inspect the text as well as diagnostics. If it fails with `GLYPH_SKILL_UNFIT`, recover in this order: (1) remove subgraphs, C4 boundaries and other groups; (2) split into an overview plus detail diagrams of about 6–8 nodes each, repeating the nodes where they join; (3) for a requirement or C4 diagram, a `flowchart` with the same nodes and labelled edges. Shortening labels or flipping direction rarely helps. State any split. Do not silently remove content or enlarge the width beyond the destination budget. If you give up on the renderer and draw by hand, say so and why.
 - Paste the successful output verbatim, preserving internal spaces. Briefly explain orientation changes, pagination, or reduced labels. Unless explicitly requested, do not substitute Mermaid, commands, screenshots, or file links for the diagram. An explicit text-file export can redirect stdout to the requested path.
+
+## Report a problem
+
+If the renderer keeps failing on a reasonable input, or its output is wrong (missing labels, crossings, false boxes, chopped words), offer the user to report it. Draft the issue as described in [the issue reference](references/issues.md), show it to the user, and file it only with their explicit approval.

@@ -32,6 +32,7 @@ Mermaid defaults to 72 columns, box for chat and braille for `--target web`; `--
 - Chat radar uses a braille outer contour/spokes and whole-cell series symbols `• ○ × +` (cycling); first series wins shared cells. Use it for one series: several overlapping curves are hard to tell apart in monochrome, so compare options with a grouped bar chart instead. Explicit `--charset` wins; terminal and web keep their defaults.
 - Size line, area and bar charts from the data with `--size`: `compact` 48×16 (JSON default; up to ~25 x points or ~5 bar categories, one or two series), `wide` 72×16 (more x points or categories, e.g. a month of days, two years of months, long category names), `tall` 48×24 (three or more series, or small changes that must stay visible), `full` 72×24 (both). Mermaid and other charts default to 72×24. If stderr carries a `hint`, rerun once with the size it names.
 - Heatmaps render as a bare grid of labelled rows and columns with a `min … max` key underneath; values are binned over their own range.
+- A Sankey with more than three or four columns may not fit 72 columns: split it into stage ranges of at most three columns, repeating the shared nodes, and say so.
 - Pies label each slice in place with no legend. A slice under about 2% has no room for a label and fails the render: group the small slices into one slice and say so, or use a bar chart.
 - When the host provides a text-cell budget or the user requests one, pass `--width N --height N`. These are character cells, not pixels; the default is a budget, not a claim to have measured a window.
 - Only when writing directly to a real terminal, use `--target terminal`; it reads stdout's terminal dimensions, otherwise falls back to 80×24. Use `--charset ascii` for a strictly ASCII destination.
@@ -42,3 +43,7 @@ Mermaid defaults to 72 columns, box for chat and braille for `--target web`; `--
 - Check that the axes, units, categories, and series communicate the supplied data. Data folding or loss fails the render; split into complete smaller charts without changing values. If diagnostics report omitted labels or legends, disclose that or split with comparable scales. Correct a malformed spec and rerun; do not repair glyphs by hand.
 - Paste the successful renderer output verbatim, with a short explanation of what it shows. Preserve spaces inside lines. Unless explicitly requested, do not substitute a command, source spec, screenshot, or file link for the chart. An explicit text-file export can redirect stdout to the requested path.
 - Never trim, elide (`...`), or hand-edit rows or columns. For a smaller chart, rerun with a smaller `--size` or `--height`; to focus a line or dot chart, set `scales.y.domain`.
+
+## Report a problem
+
+If the renderer keeps failing on a reasonable input, or its output is wrong (lost labels, broken axes, misdrawn values), offer the user to report it. Draft the issue as described in [the issue reference](references/issues.md), show it to the user, and file it only with their explicit approval.

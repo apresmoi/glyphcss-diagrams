@@ -411,6 +411,7 @@ test('malformed specs and impossible sizes fail before any misleading text is em
     assert.equal(result.stdout, '');
     assert.equal(result.diagnostic.code, code, result.stderr);
     if (code === 'bad-chart-input') assert.ok(result.diagnostic.hint);
+    if (code === 'GLYPH_SKILL_UNFIT') assert.match(result.diagnostic.hint, /Remove subgraphs.*overview plus detail.*issues\.md/u);
   }
 });
 
@@ -431,7 +432,7 @@ test('charts refuse folded stages, lost slices, and folded, dropped, or unroutab
     assert.equal(result.diagnostic.code, 'GLYPH_SKILL_UNFIT');
     assert.ok(result.diagnostic.report.ledger.some(entry => entry.code === code), result.stderr);
     assert.match(result.diagnostic.error, /input data/);
-    assert.match(result.diagnostic.hint, /every input value/);
+    assert.match(result.diagnostic.hint, /Sankey into stage ranges.*every input value.*issues\.md/u);
   }
   const complete = success('charts', JSON.stringify(sankey([{ s: 'A', t: 'B', v: 10 }, { s: 'A', t: 'C', v: 10 }])));
   assert.equal(complete.meta.values, 2);

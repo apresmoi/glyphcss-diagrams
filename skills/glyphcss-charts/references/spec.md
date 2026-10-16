@@ -18,7 +18,7 @@ Each mark is `{ "type": ..., "data": [...], "channels": {...}, "options"?: {...}
 For `line`, `area`, `bar`, `dot`, bare numeric data with empty channels uses index as x and value as y. Records need explicit channels. Compose line/dot/rule marks in one `marks` array to share scales.
 
 - Multiple series: map `stroke` (lines) or `fill` (regions) to the category field. `options.name` names a whole mark in the legend. Monochrome series use different glyphs/styles.
-- Transforms: `transform: {"kind":"group","reduce":"sum"}` aggregates by x; `stack` stacks y by x; `bin` uses `n` bins; `window` uses `n` consecutive rows and `reduce`; `normalize` divides by the largest absolute y. Transform kinds go on the mark, not inside `options`. Arc, Sankey, and funnel do not support transforms.
+- Transforms: `transform: {"kind":"group","reduce":"sum"}` aggregates by x; `stack` stacks y by x; `bin` uses `n` bins and replaces `y` with each bin's count (the mark still needs a `y` channel; map it to the x field); `window` uses `n` consecutive rows and `reduce`; `normalize` divides by the largest absolute y. Transform kinds go on the mark, not inside `options`. Arc, Sankey, and funnel do not support transforms.
 - Scales: `scales: {"x":{"type":"time"},"y":{"domain":[0,100]}}`. Types: `linear`, `log`, `sqrt`, `time`, `band`. ISO date strings work for continuous time marks. Bar and area domains include zero; zero is invalid on a log scale.
 - Axes: `axes: {"x":{"title":"Month"},"y":{"title":"Revenue ($k)","format":"si"}}`. Tick formats may be named presets, such as `si`, or objects such as `{"preset":"currency","symbol":"$"}`. Use unit-bearing titles.
 - `legend: false` explicitly hides the legend. Do this only when the remaining labels identify every series.
