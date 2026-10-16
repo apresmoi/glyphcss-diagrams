@@ -41,6 +41,6 @@ These chart kinds take Mermaid source only; pipe it to the same script. Every ex
 | Binary header layout | `packet-beta` · `0-15: "Source port"` · `16-31: "Destination port"` (bit ranges, 32 per row) |
 
 - Gantt status tags (`done`, `active`, `crit`) and timeline/journey sections render as text; the ledger on stderr says so. That note is expected, not a failure.
-- In chat, radar becomes grouped bars per axis and quadrant points carry their labels; both are complete renders.
+- In chat, radar draws its outer contour, axes and curves in braille; keep it to one series (compare several options with grouped bars). Quadrant points carry their labels.
 - A treemap fills whatever height it is given: pass `--height` of about two rows per leaf plus one per branch (minimum 8) so a small tree is not stretched to 24 rows.
 - Keep kanban to 4 columns and 4 cards per column at 72 columns; split larger boards by column.

@@ -140,7 +140,7 @@ You can name `glyphcss-charts` or `glyphcss-diagrams` explicitly. In Claude's pl
 
 Diagrams wrap labels, adjust spacing, try the other orientation, and paginate as needed. The renderer checks dimensions and graph coverage. Charts reject data loss; the agent can split crowded data into complete smaller charts. The skills never ask you to measure your window or mistake a tool subprocess's TTY for the chat viewport.
 
-Line and area charts select the braille charset by default. Other chat charts and diagrams select box characters. `--charset ascii` provides a strict ASCII option. Actual renderer output goes into the reply; file exports are optional when requested.
+Line and area charts select the braille charset by default. The charts script applies the same mark defaults to JSON and Mermaid: trends use braille; chat radar uses a braille outer contour/spokes and whole-cell `• ○ × +` series (recommended for one series; first series wins shared cells); pies use ASCII fills and no default legend, and fail if a slice loses its callout. Mermaid keeps its 72×24 budget. Other chat charts and diagrams select box characters. The diagrams script keeps the library's Mermaid chart defaults. `--charset ascii` provides a strict ASCII option. Actual renderer output goes into the reply; file exports are optional when requested.
 
 ## Built on Glyphcss
 

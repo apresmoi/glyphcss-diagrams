@@ -1,4 +1,4 @@
-import { renderGlyphChart, glyphChartRepairHint, normalizeGlyphChartInput, renderGlyphChartMermaid } from '@glyphcss/charts';
+import { renderGlyphChart, glyphChartRepairHint, normalizeGlyphChartInput, glyphChartFromMermaid, renderGlyphChartMermaid } from '@glyphcss/charts';
 import { renderGlyphDiagram } from '@glyphcss/diagrams';
 import { renderGlyphSequence } from '@glyphcss/diagrams/sequence';
 import { CHART_SIZES, createGlyphMermaidRenderer, parseJson, runCli } from './common.mjs';
@@ -56,32 +56,56 @@ function sizeHint(trends, bars, budget) {
   return `${reasons} crowd ${budget.width} x ${budget.height}; rerun with --size ${size}.`;
 }
 
-const mermaid = createGlyphMermaidRenderer({ chart: renderGlyphChartMermaid, graph: renderGlyphDiagram, sequence: renderGlyphSequence });
+function renderChart(spec, cli, options, render = renderGlyphChart) {
+  // The parsed source ledger identifies radar after preambles/comments/entities.
+  const chatRadar = options.target === 'chat' && spec.ledger?.some(entry => entry.detail?.feature === 'radar tick labels');
+  const charset = cli.charset ?? (spec.marks.some(isTrend) ? 'braille' : options.charset);
+  // Monochrome braille cannot separate inner rings from curves; keep only the
+  // outer contour and the spokes so the plotted shape reads.
+  const radarGrid = chatRadar && !cli.charset ? { radarGrid: 'outer', radarSeries: 'cells' } : {};
+  const pie = spec.marks.some(isArc);
+  const heatmap = spec.marks.every(isCell);
+  let chartSpec = pie && spec.legend === undefined ? { ...spec, legend: false } : spec;
+  if (heatmap) chartSpec = { ...chartSpec, axes: bareAxes(chartSpec.axes) };
+  const ramp = heatmap && charset !== 'ascii' ? { cellRamp: HEATMAP_RAMP } : {};
+  try {
+    const result = render(chartSpec, { ...options, charset, ...radarGrid, ...(pie && { shades: PIE_SHADES }), ...ramp });
+    // Without a legend a slice that lost its callout is anonymous.
+    const unnamed = chartSpec.legend === false ? result.report.ledger.filter(entry => entry.code === 'label-dropped' && entry.detail?.role === 'pie callout').map(entry => entry.detail.text) : [];
+    if (unnamed.length) throw Object.assign(new Error(`Pie slices without a label: ${unnamed.join(', ')}. Group small slices into one disclosed slice, or use a bar chart.`), { code: 'GLYPH_SKILL_UNFIT' });
+    return { result, charset };
+  } catch (error) {
+    error.charset = charset;
+    throw error;
+  }
+}
+
+async function renderMermaid(text, cli, options) {
+  let charset;
+  const mermaid = createGlyphMermaidRenderer({
+    chart: source => {
+      const rendered = renderChart(glyphChartFromMermaid(source), cli, options, (spec, prepared) =>
+        // Keep the public renderer's charset-dependent radar parse, flow-list
+        // height handling and both source ledgers; only override the legend.
+        renderGlyphChartMermaid(source, { ...prepared, legend: spec.legend }));
+      charset = rendered.charset;
+      return rendered.result;
+    },
+    graph: renderGlyphDiagram,
+    sequence: renderGlyphSequence,
+  });
+  return { ...await mermaid(text, cli, options), ...(charset && { charset }) };
+}
 
 await runCli({
   kind: 'chart',
   repairHint: glyphChartRepairHint,
   render: (text, cli, _options, budgetFor) => {
-    if (!/^\s*(?:[\[{"\d]|-(?:\d|\.)|(?:true|false|null)\s*$)/u.test(text)) return mermaid(text, cli, _options);
+    if (!/^\s*(?:[\[{"\d]|-(?:\d|\.)|(?:true|false|null)\s*$)/u.test(text)) return renderMermaid(text, cli, _options);
     const spec = normalizeGlyphChartInput(parseJson(text));
     const trends = spec.marks.filter(isTrend);
     const bars = spec.marks.filter(isBar);
     const options = budgetFor(trends.length || bars.length ? 'compact' : undefined);
-    const charset = cli.charset ?? (trends.length ? 'braille' : options.charset);
-    const pie = spec.marks.some(isArc);
-    const heatmap = spec.marks.every(isCell);
-    let chartSpec = pie && spec.legend === undefined ? { ...spec, legend: false } : spec;
-    if (heatmap) chartSpec = { ...chartSpec, axes: bareAxes(chartSpec.axes) };
-    const ramp = heatmap && charset !== 'ascii' ? { cellRamp: HEATMAP_RAMP } : {};
-    try {
-      const result = renderGlyphChart(chartSpec, { ...options, charset, ...(pie && { shades: PIE_SHADES }), ...ramp });
-      // Without a legend a slice that lost its callout is anonymous.
-      const unnamed = chartSpec.legend === false ? result.report.ledger.filter(entry => entry.code === 'label-dropped' && entry.detail?.role === 'pie callout').map(entry => entry.detail.text) : [];
-      if (unnamed.length) throw Object.assign(new Error(`Pie slices without a label: ${unnamed.join(', ')}. Group small slices into one disclosed slice, or use a bar chart.`), { code: 'GLYPH_SKILL_UNFIT' });
-      return { result, charset, hint: sizeHint(trends, bars, options) };
-    } catch (error) {
-      error.charset = charset;
-      throw error;
-    }
+    return { ...renderChart(spec, cli, options), hint: sizeHint(trends, bars, options) };
   },
 });

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { copyFile, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -182,6 +183,121 @@ test('chat pies label every slice in place: ASCII fills, no legend, and no anony
   assert.equal(thin.diagnostic.code, 'GLYPH_SKILL_UNFIT');
   assert.match(thin.diagnostic.error, /Tiny · 1%/u);
   assert.equal(run('charts', JSON.stringify({ legend: true, marks: [{ type: 'arc', data: [{ name: 'Big', v: 97 }, { name: 'Tiny', v: 1 }, { name: 'Rest', v: 2 }], channels: { y: 'v', fill: 'name' } }] })).status, 0);
+});
+
+test('Mermaid trends share native braille selection without changing their budget or explicit charset', () => {
+  for (const series of ['line [2, 4, 3, 8]', 'bar [3, 5, 2, 6]\nline [2, 4, 3, 8]']) {
+    const source = `xychart-beta\nx-axis [Mon, Tue, Wed, Thu]\n${series}`;
+    const automatic = success('charts', source);
+    const braille = success('charts', source, ['--charset', 'braille']);
+    assert.equal(automatic.budget.charset, 'braille');
+    assert.deepEqual([automatic.budget.width, automatic.budget.height], [72, 24]);
+    assert.equal(automatic.text, braille.text);
+    assert.match(automatic.text, /[\u2801-\u28ff]/u);
+    for (const charset of ['ascii', 'box', 'blocks']) {
+      const explicit = success('charts', source, ['--charset', charset]);
+      assert.equal(explicit.budget.charset, charset);
+      assert.notEqual(explicit.text, automatic.text);
+      assert.doesNotMatch(explicit.text, /[\u2800-\u28ff]/u);
+      if (charset === 'ascii') assert.match(explicit.text, /^[\x20-\x7e\n]+$/u);
+    }
+  }
+  const bars = success('charts', 'xychart\nbar [2, 4, 3, 8]');
+  assert.equal(bars.budget.charset, 'box');
+  assert.equal(success('charts', 'xychart\nline [2, 4, 3, 8]', ['--target', 'web']).budget.charset, 'braille');
+});
+
+test('shared preprocessing preserves native JSON chart bytes', () => {
+  // Captured before extraction, using the same upstream source and defaults.
+  const hashes = {
+    line: '16fc24f0252434935b49d4938a0315f0550868c0e5380bb1957fb8a73b0211c5',
+    area: '9242e3d9a9c0c9d8a0eae1025892133be679bbe94a78e6f2bf5d07c758c92f72',
+    bar: 'b3fc7e2a1c81ee7ed8236ea6299b3568a9e37f2aef650bd93bd8b96b444300a3',
+    arc: 'b3417b7af276765a880fc71575522244f3d1b4408f62ead31ea72d8be1fa4706',
+    cell: '1e751808bf1d20493d6ceb356523231d02296695c065fe406f716573047bf2ea',
+  };
+  for (const [type, hash] of Object.entries(hashes)) {
+    const output = run('charts', JSON.stringify({ type, data: [3, 5, 2], channels: {} }));
+    assert.equal(output.status, 0, output.stderr);
+    assert.equal(createHash('sha256').update(output.stdout).digest('hex'), hash, type);
+  }
+});
+
+test('Mermaid pies share native legend, shades and anonymous-slice rejection, retaining source notes', () => {
+  const source = 'pie\n"Chrome": 64\n"Safari": 19\n"Edge": 5\n"Firefox": 3\n"Other": 9';
+  for (const args of [[], ['--target', 'web'], ['--charset', 'ascii'], ['--charset', 'braille']]) {
+    const output = success('charts', source, args);
+    assert.doesNotMatch(output.text, /[█░▚╱▌═▓▒]/u);
+    for (const glyph of ['#', '=', '+', ':', '.']) assert.ok(output.text.includes(glyph), glyph);
+    for (const name of ['Chrome', 'Safari', 'Edge', 'Firefox', 'Other']) assert.equal(output.text.split(name).length - 1, 1, name);
+  }
+  const configured = success('charts', `%%{init: {"pie": {"showLegend": true}}}%%\npie showData\n"A": 6\n"B": 4`);
+  assert.equal(configured.text.split('A [6]').length - 1, 1);
+  assert.ok(configured.report.ledger.some(entry => entry.code === 'mermaid-degraded'));
+  for (const args of [[], ['--charset', 'ascii'], ['--target', 'web']]) {
+    const thin = run('charts', 'pie\n"Big": 97\n"Tiny": 1\n"Rest": 2', args);
+    assert.equal(thin.status, 1, thin.stderr);
+    assert.equal(thin.stdout, '');
+    assert.equal(thin.diagnostic.code, 'GLYPH_SKILL_UNFIT');
+    assert.match(thin.diagnostic.error, /Tiny · 1%/u);
+    assert.equal(thin.diagnostic.budget.charset, args.includes('ascii') ? 'ascii' : args.includes('web') ? 'braille' : 'box');
+  }
+});
+
+test('Mermaid radar keeps charset-dependent parsing and cyclic Sankey keeps its source ledger', () => {
+  const radar = 'radar-beta\naxis speed["Speed"], cost["Cost"], safety["Safety"]\ncurve a["Plan"]{4, 3, 5}\nmax 5';
+  const automatic = success('charts', radar);
+  assert.equal(automatic.budget.charset, 'braille');
+  assert.notEqual(automatic.text, success('charts', `${radar}\nticks 1`, ['--charset', 'braille']).text);
+  assert.match(automatic.text, /•/u);
+  assert.doesNotMatch(automatic.text, /A: /u);
+  assert.match(automatic.text, /[\u2801-\u28ff]/u);
+  const box = success('charts', radar, ['--charset', 'box']);
+  assert.equal(box.budget.charset, 'box');
+  assert.ok(box.report.ledger.some(entry => entry.detail?.feature === 'radar whole-cell curves'));
+  assert.ok(!automatic.report.ledger.some(entry => entry.detail?.feature === 'radar whole-cell curves'));
+  const cycle = success('charts', 'sankey-beta\nA,B,3\nB,A,2');
+  assert.match(cycle.text, /A -> B \(3\)/u);
+  assert.match(cycle.text, /B -> A \(2\)/u);
+  assert.ok(cycle.report.ledger.some(entry => entry.detail?.fallback === 'flow-list'));
+});
+
+test('chat radar defaults to cell symbols for any series count; explicit charset and other targets keep lines', () => {
+  const axes = 'axis speed[Speed], cost[Cost], quality[Quality], safety[Safety], scale[Scale], support[Support]';
+  const curves = ['curve a[Hosted]{9,6,7,8,9,8}', 'curve b[Custom]{4,8,9,7,6,5}', 'curve c[Hybrid]{7,7,8,9,8,7}', 'curve d[Local]{8,5,6,7,8,9}', 'curve e[Other]{3,4,5,6,7,8}'];
+  for (const count of [1, 3, 5]) {
+    const radar = `radar-beta\n${axes}\n${curves.slice(0, count).join('\n')}\nmax 10\nticks 2\ngraticule polygon`;
+    const chat = success('charts', radar);
+    assert.match(chat.text, /•/u);
+    assert.doesNotMatch(chat.text, /[A-E]: /u);
+    assert.ok(chat.report.ledger.some(entry => entry.detail?.feature === 'radar cell edges'));
+    assert.ok(chat.report.ledger.some(entry => entry.detail?.feature === 'radar inner graticules'));
+    for (const [i, name] of ['Hosted', 'Custom', 'Hybrid', 'Local', 'Other'].slice(0,count).entries()) {
+      assert.match(chat.text, new RegExp(`${['•','○','×','\\+'][i % 4]} +${name}`, 'u'));
+    }
+    for (const args of [['--charset','braille'], ['--charset','box'], ['--charset','ascii'], ['--target','web'], ['--target','terminal']]) {
+      const unchanged = success('charts', radar, args);
+      assert.doesNotMatch(unchanged.text, /[•○]/u);
+      assert.ok(!unchanged.report.ledger.some(entry => entry.detail?.feature === 'radar cell edges'));
+      assert.ok(!unchanged.report.ledger.some(entry => entry.detail?.feature === 'radar inner graticules'));
+    }
+    const narrow = success('charts', radar, ['--width','36','--height','18']);
+    assert.match(narrow.text, /•/u);
+    const rows = narrow.text.split('\n');
+    for (const name of ['Speed','Cost','Quality','Safety','Scale','Support']) {
+      const y = rows.findIndex(r => r.includes(name));
+      if (y < 0) { assert.ok(narrow.report.ledger.some(e => e.code === 'label-dropped' && e.detail?.text === name)); continue; }
+      const x = rows[y].indexOf(name);
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= name.length; dx++) {
+        if (!dy && dx >= 0 && dx < name.length) continue;
+        assert.equal(rows[y+dy]?.[x+dx] ?? ' ', ' ', `${name} gap`);
+      }
+    }
+    assert.doesNotMatch(success('charts', `${radar}\nshowLegend false`).text, /Hosted|Custom|Hybrid|Local|Other/u);
+  }
+  const shared = `radar\n${axes}\ncurve a[First]{9,6,7,8,9,8}\ncurve b[Second]{9,6,7,8,9,8}\nmax 10\nshowLegend false`;
+  assert.match(success('charts', shared).text, /•/u);
+  assert.doesNotMatch(success('charts', shared).text, /○/u);
 });
 
 test('chat heatmaps render a bare braille-to-block grid with a range key', () => {
@@ -406,13 +522,21 @@ test('both source entrypoints dispatch Mermaid and retain JSON without an upstre
       export function acceptChart(header) { chartHeader = header; }
       const render = kind => (source, options) => {
         calls.push({ kind, source, options });
-        return { text: 'native result', report: { ledger: [] } };
+        const report = { ledger: [] };
+        return { text: 'native result', report, build: { report } };
       };
       export const renderGlyphChart = render('chart-json');
       export function renderGlyphChartMermaid(source, options) {
         if (source === 'badChart') throw Object.assign(new Error('syntax'), { code: 'GLYPH_MERMAID_SYNTAX' });
         if (!source.includes(chartHeader) || !chartHeader) throw Object.assign(new Error('not chart'), { code: 'GLYPH_MERMAID_NOT_CHART_TYPE' });
-        return render('chart')(source, options);
+        const result = render('chart')(source, options);
+        result.report.ledger.push({ code: 'mermaid-degraded', message: 'Source adaptation.' });
+        return result;
+      }
+      export function glyphChartFromMermaid(source) {
+        if (source === 'badChart') throw Object.assign(new Error('syntax'), { code: 'GLYPH_MERMAID_SYNTAX' });
+        if (!source.includes(chartHeader) || !chartHeader) throw Object.assign(new Error('not chart'), { code: 'GLYPH_MERMAID_NOT_CHART_TYPE' });
+        return { marks: [{ type: source.startsWith('pie') ? 'arc' : 'text', data: [], channels: {} }], ledger: [] };
       }
       export const renderGlyphDiagram = render('graph');
       export const renderGlyphSequence = render('sequence');
@@ -474,6 +598,13 @@ test('both source entrypoints dispatch Mermaid and retain JSON without an upstre
     assert.deepEqual(native.calls.at(-1).source.marks[0].data, [3, 5, 2]);
     assert.equal(native.calls.at(-1).kind, 'chart-json');
     assert.equal(native.calls.at(-1).options.charset, 'braille');
+    native.acceptChart('pie');
+    const pie = await native.callbacks[1].render('pie\n Example', cli, budgetFor(), budgetFor);
+    assert.equal(native.calls.at(-1).source, 'pie\n Example');
+    assert.equal(native.calls.at(-1).options.legend, false);
+    assert.deepEqual(native.calls.at(-1).options.shades, ['#', '=', '+', ':', '.']);
+    assert.strictEqual(pie.result.report, pie.result.build.report);
+    assert.deepEqual(pie.result.report.ledger, [{ code: 'mermaid-degraded', message: 'Source adaptation.' }]);
   } finally { await rm(sourceDirectory, { recursive: true, force: true }); }
 });
 
@@ -489,4 +620,52 @@ test('graph coverage matches id-less block metadata without allowing a lost or d
   assert.throws(() => assertGraphCoverage(result), { code: 'GLYPH_SKILL_UNFIT' });
   result.meta.edges = [{ ...edge, invisible: true }];
   assert.doesNotThrow(() => assertGraphCoverage(result));
+});
+
+test('chat radar with several curves stays a braille radar without inner rings; explicit charset and other targets win', () => {
+  const body = `axis speed[Speed], cost[Cost], quality[Quality], safety[Safety], scale[Scale], support[Support]
+curve a[Same]{4,8,9,7,6,5}, b[Same]{9,6,7,8,9,8}
+max 10
+ticks 2
+showLegend false`;
+  for (const header of ['radar', 'radar-beta']) {
+    const source = `\uFEFF---\ntitle: Radar comparison\n---\n%%{init: {"theme": "dark"}}%%\n%% comment\n${header}\n${body}`;
+    const automatic = success('charts', source);
+    assert.equal(automatic.budget.charset, 'braille');
+    assert.ok(!automatic.report.ledger.some(entry => entry.detail?.feature === 'radar whole-cell curves'));
+    assert.ok(automatic.report.ledger.some(entry => entry.detail?.feature === 'radar inner graticules'));
+    for (const charset of ['ascii', 'box', 'blocks', 'braille']) {
+      const explicit = success('charts', source, ['--charset', charset]);
+      assert.equal(explicit.budget.charset, charset);
+      if (charset === 'braille' || charset === 'blocks') assert.ok(!explicit.report.ledger.some(entry => entry.detail?.feature === 'radar whole-cell curves'));
+    }
+    for (const target of ['terminal', 'web']) {
+      const automatic = success('charts', source, ['--target', target]);
+      assert.equal(automatic.budget.charset, 'braille');
+      assert.equal(automatic.text, success('charts', source, ['--target', target, '--charset', 'braille']).text);
+      assert.ok(!automatic.report.ledger.some(entry => entry.detail?.feature === 'radar inner graticules'));
+    }
+  }
+});
+
+test('chat single-series radar keeps braille, its contour and all spokes, without inner rings', () => {
+  const source = `radar-beta\naxis N,E,S,W\ncurve one{5,7,4,8}\nmax 10\nticks 5\nshowLegend false`;
+  const oneRing = source.replace('ticks 5', 'ticks 1');
+  for (const args of [[], ['--width', '36', '--height', '18'], ['--width', '24', '--height', '14']]) {
+    const automatic = success('charts', source, args);
+    assert.equal(automatic.budget.charset, 'braille');
+    assert.equal(automatic.text, success('charts', oneRing, args).text);
+    assert.ok(automatic.report.ledger.some(entry => entry.detail?.feature === 'radar inner graticules'));
+  }
+  const explicit = success('charts', source, ['--charset', 'braille']);
+  assert.notEqual(explicit.text, success('charts', oneRing, ['--charset', 'braille']).text);
+  assert.ok(!explicit.report.ledger.some(entry => entry.detail?.feature === 'radar cell edges'));
+  for (const target of ['terminal', 'web']) {
+    const full = success('charts', source, ['--target', target]);
+    assert.notEqual(full.text, success('charts', oneRing, ['--target', target]).text);
+    assert.ok(!full.report.ledger.some(entry => entry.detail?.feature === 'radar inner graticules'));
+  }
+  // Ordinary native line marks have no radial semantics, even with radar-like names.
+  const native = JSON.stringify({ marks: [{ type: 'line', options: { name: 'radar' }, data: [1, 3, 2], channels: {} }, { type: 'line', data: [2, 4, 3], channels: {} }] });
+  assert.equal(success('charts', native).budget.charset, 'braille');
 });
