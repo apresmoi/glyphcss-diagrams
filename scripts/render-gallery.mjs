@@ -47,11 +47,18 @@ for (const spec of manifest) {
 // The chart and diagram geometry comes entirely from the shipped renderers.
 function grid(item, x, y, width, height, palette, maxFont = 20) {
   const lines = item.text.split('\n');
-  const columns = Math.max(...lines.map(line => [...line].length));
-  const size = Math.min(maxFont, width / (columns * 0.6022), height / item.rows);
+  // Centre the inked cells, not the render budget: renderers pad their own
+  // margins, so centring the full grid leaves content visibly off-centre.
+  const inked = lines.map((line, r) => ({ r, cells: [...line], start: [...line].findIndex(glyph => glyph.trim()) }))
+    .filter(line => line.start >= 0);
+  const minCol = Math.min(...inked.map(line => line.start));
+  const maxCol = Math.max(...inked.map(line => line.cells.length - [...line.cells].reverse().findIndex(glyph => glyph.trim())));
+  const firstRow = inked[0].r, lastRow = inked.at(-1).r + 1;
+  const columns = maxCol - minCol, rows = lastRow - firstRow;
+  const size = Math.min(maxFont, width / (columns * 0.6022), height / rows);
   const cell = size * 0.6022, row = size;
-  const left = x + (width - columns * cell) / 2;
-  const top = y + (height - item.rows * row) / 2 + size;
+  const left = x + (width - columns * cell) / 2 - minCol * cell;
+  const top = y + (height - rows * row) / 2 + size - firstRow * row;
   return lines.map((line, r) => {
     const cells = [...line].map((glyph, col) =>
       `<text xml:space="preserve" x="${(left + col * cell).toFixed(2)}" y="${(top + r * row).toFixed(2)}" font-family="${font}" font-size="${size.toFixed(4)}" fill="${palette.ink}">${esc(glyph)}</text>`);

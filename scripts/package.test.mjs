@@ -86,6 +86,22 @@ test('gallery covers 16 families with verbatim monochrome chat output and workin
   }
 });
 
+test('gallery tiles centre their inked cells in the drawing area', () => {
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'examples/gallery.json'), 'utf8'));
+  // card(item, 1, 1, 638, 478) draws the grid in x 29..611 and y 77..415.
+  const centre = { x: 320, y: 246 };
+  for (const spec of manifest) {
+    const svg = readFileSync(join(ROOT, `assets/${spec.id}.svg`), 'utf8');
+    const inked = [...svg.matchAll(/<text xml:space="preserve" x="([^"]+)" y="([^"]+)" font-family="[^"]+" font-size="([^"]+)"[^>]*>([\s\S]*?)<\/text>/g)]
+      .filter(cell => xmlText(cell[4]).trim()).map(cell => ({ x: Number(cell[1]), y: Number(cell[2]), size: Number(cell[3]) }));
+    const size = inked[0].size, cell = size * 0.6022;
+    const x = (Math.min(...inked.map(c => c.x)) + Math.max(...inked.map(c => c.x)) + cell) / 2;
+    const y = (Math.min(...inked.map(c => c.y)) - size + Math.max(...inked.map(c => c.y))) / 2;
+    assert.ok(Math.abs(x - centre.x) <= cell, `${spec.id} is ${(x - centre.x).toFixed(1)}px off-centre horizontally`);
+    assert.ok(Math.abs(y - centre.y) <= size, `${spec.id} is ${(y - centre.y).toFixed(1)}px off-centre vertically`);
+  }
+});
+
 test('both hero charts preserve the same monochrome trend output', () => {
   const plain = readFileSync(join(ROOT, 'examples/trend.txt'), 'utf8').slice(0, -1);
   for (const [theme, ink] of [['dark', '#ffe8b8'], ['light', '#162b3c']]) {
