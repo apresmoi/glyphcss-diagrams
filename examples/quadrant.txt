@@ -1,0 +1,24 @@
+                         Next fixes
+
+High impact │         Do now        │         Plan
+            │                       │
+            │
+            │        Docs           │
+            │          ●            │
+            │                               Cache
+            │                       │         ●
+            │                       │
+            │
+            │                       │
+            │── ── ── ── ── ── ── ──│── ── ── ── ── ── ── ──
+            │
+            │          Later        │         Skip
+            │                       │
+            │                             Rewrite
+            │          Theme        │        ●
+            │            ●          │
+            │
+            │                       │
+            │                       │
+ Low impact ────────────────────────────────────────────────
+            Low effort                           High effort

@@ -1,14 +1,14 @@
- User                     Agent                 Renderer
-   │                        │                       │
-   │ Show the trend         │                       │
-   ├───────────────────────▶│                       │
-   │                        │                       │
-   │                        │ Data + budget         │
-   │                        ├──────────────────────▶│
-   │                        │                       │
-   │                        │ Text chart            │
-   │                        │◀ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌┤
-   │                        │                       │
-   │ Inline reply           │                       │
-   │◀╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌┤                       │
-   │                        │                       │
+ User                      Agent                  Renderer
+   │                         │                        │
+   │ Show the trend          │                        │
+   ├────────────────────────▶│                        │
+   │                         │                        │
+   │                         │ Data + budget          │
+   │                         ├───────────────────────▶│
+   │                         │                        │
+   │                         │ Text chart             │
+   │                         │◀╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌┤
+   │                         │                        │
+   │ Inline reply            │                        │
+   │◀╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ╌ ┤                        │
+   │                         │                        │

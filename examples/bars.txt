@@ -1,5 +1,7 @@
                Requests by region
+
 Requests (k)
+
 40 ┤      ███
    │      ███           ▃▃▃
    │      ███           ███

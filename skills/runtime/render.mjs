@@ -10,9 +10,10 @@ const isTrend = mark => mark?.type === 'line' || mark?.type === 'area';
 const isBar = mark => mark?.type === 'bar';
 const isArc = mark => mark?.type === 'arc';
 // Chat pies: every slice carries its own `name · NN%` callout, so the legend
-// only repeats them, and plain ASCII fills read cleaner than mixed block,
-// line and stripe textures.
-const PIE_SHADES = ['#', '=', '+', ':', '.'];
+// only repeats them. A dark-to-light shade ramp reads as one solid disc; a
+// fifth step keeps a fifth slice from wrapping back to the first slice's fill.
+const PIE_SHADES = ['█', '▓', '▒', '░', '·'];
+const PIE_ASCII_SHADES = ['#', '=', '+', ':', '.'];
 // Chat heatmaps: braille dot density for the faint end, then shade blocks,
 // on a bare grid whose row and column labels already do the axes' job.
 const isCell = mark => mark?.type === 'cell';
@@ -72,7 +73,7 @@ function renderChart(spec, cli, options, render = renderGlyphChart) {
   if (heatmap) chartSpec = { ...chartSpec, axes: bareAxes(chartSpec.axes) };
   const ramp = heatmap && charset !== 'ascii' ? { cellRamp: HEATMAP_RAMP } : {};
   try {
-    const result = render(chartSpec, { ...options, charset, ...radarGrid, ...(pie && { shades: PIE_SHADES }), ...ramp });
+    const result = render(chartSpec, { ...options, charset, ...radarGrid, ...(pie && { shades: charset === 'ascii' ? PIE_ASCII_SHADES : PIE_SHADES }), ...ramp });
     // Without a legend a slice that lost its callout is anonymous.
     const unnamed = chartSpec.legend === false ? result.report.ledger.filter(entry => entry.code === 'label-dropped' && entry.detail?.role === 'pie callout').map(entry => entry.detail.text) : [];
     if (unnamed.length) throw Object.assign(new Error(`Pie slices without a label: ${unnamed.join(', ')}. Group small slices into one disclosed slice, or use a bar chart.`), { code: 'GLYPH_SKILL_UNFIT' });

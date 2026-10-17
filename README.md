@@ -1,7 +1,7 @@
 <h1>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.png?v=86495e06aaac">
-    <img alt="An agent terminal: a user asks for weekly signups, and the agent replies with a Glyphcss braille chart directly in the conversation." src="assets/hero-light.png?v=dd3022a6ec7d" width="1200">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.png?v=11eaf34aa33a">
+    <img alt="An agent terminal: a user asks for weekly signups, and the agent replies with a Glyphcss braille chart directly in the conversation." src="assets/hero-light.png?v=d379b521d073" width="1200">
   </picture>
 </h1>
 
@@ -18,46 +18,110 @@ Describe a workflow, paste Mermaid, or hand your agent some data. It chooses a l
 
 ## What it renders
 
+<!-- gallery:start -->
 <table>
 <tr>
 <td width="50%">
-<a href="assets/trend.svg"><img src="assets/trend.png" alt="Braille line chart showing weekly signups, with labeled axes" width="640"></a><br>
-<strong>Trends</strong> — lines and areas, with braille detail.<br>
-<a href="examples/signups.json">Source</a> · <a href="examples/trend.txt">Plain text</a>
-</td>
-<td width="50%">
-<a href="assets/bars.svg"><img src="assets/bars.png" alt="Text bar chart comparing requests across EU, US, and APAC" width="640"></a><br>
-<strong>Comparisons</strong> — categories, values, and units.<br>
-<a href="examples/regions.json">Source</a> · <a href="examples/bars.txt">Plain text</a>
-</td>
-</tr>
-<tr>
-<td>
-<a href="assets/workflow.svg"><img src="assets/workflow.png" alt="Text workflow showing tests, shipping, and a fix-and-retry loop" width="640"></a><br>
-<strong>Workflows</strong> — decisions, dependencies, and loops.<br>
+<a href="assets/workflow.svg"><img src="assets/workflow.png" alt="Flowchart: Decisions and a retry loop." width="640"></a><br>
+<strong>Flowchart</strong> — Decisions and a retry loop.<br>
 <a href="examples/delivery.mmd">Source</a> · <a href="examples/workflow.txt">Plain text</a>
 </td>
-<td>
-<a href="assets/sequence.svg"><img src="assets/sequence.png" alt="Text sequence diagram showing a user, an agent, and a renderer exchanging messages" width="640"></a><br>
-<strong>Sequences</strong> — who says what, and when.<br>
+<td width="50%">
+<a href="assets/sequence.svg"><img src="assets/sequence.png" alt="Sequence: Requests and replies between participants." width="640"></a><br>
+<strong>Sequence</strong> — Requests and replies between participants.<br>
 <a href="examples/conversation.mmd">Source</a> · <a href="examples/sequence.txt">Plain text</a>
 </td>
 </tr>
 <tr>
-<td>
-<a href="assets/flows.svg"><img src="assets/flows.png" alt="Text Sankey chart showing traffic from Search and Social through a site to reading and signup" width="640"></a><br>
-<strong>Flows</strong> — Sankey paths, proportions, and funnels.<br>
-<a href="examples/traffic.json">Source</a> · <a href="examples/flows.txt">Plain text</a>
+<td width="50%">
+<a href="assets/state.svg"><img src="assets/state.png" alt="State: A task moves from queued to done." width="640"></a><br>
+<strong>State</strong> — A task moves from queued to done.<br>
+<a href="examples/state.mmd">Source</a> · <a href="examples/state.txt">Plain text</a>
 </td>
-<td>
-<a href="assets/history.svg"><img src="assets/history.png" alt="Text branch history showing feature work and main merging into a release" width="640"></a><br>
-<strong>Histories</strong> — branches, merges, and parallel work.<br>
+<td width="50%">
+<a href="assets/class.svg"><img src="assets/class.png" alt="Class: Types, members, and a returned result." width="640"></a><br>
+<strong>Class</strong> — Types, members, and a returned result.<br>
+<a href="examples/class.mmd">Source</a> · <a href="examples/class.txt">Plain text</a>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<a href="assets/er.svg"><img src="assets/er.png" alt="ER: Tables, keys, and ownership." width="640"></a><br>
+<strong>ER</strong> — Tables, keys, and ownership.<br>
+<a href="examples/er.mmd">Source</a> · <a href="examples/er.txt">Plain text</a>
+</td>
+<td width="50%">
+<a href="assets/c4.svg"><img src="assets/c4.png" alt="C4: People, systems, and their calls." width="640"></a><br>
+<strong>C4</strong> — People, systems, and their calls.<br>
+<a href="examples/c4.mmd">Source</a> · <a href="examples/c4.txt">Plain text</a>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<a href="assets/mindmap.svg"><img src="assets/mindmap.png" alt="Mindmap: Break a release into small tasks." width="640"></a><br>
+<strong>Mindmap</strong> — Break a release into small tasks.<br>
+<a href="examples/mindmap.mmd">Source</a> · <a href="examples/mindmap.txt">Plain text</a>
+</td>
+<td width="50%">
+<a href="assets/history.svg"><img src="assets/history.png" alt="Git history: Branches and merges in a release." width="640"></a><br>
+<strong>Git history</strong> — Branches and merges in a release.<br>
 <a href="examples/history.json">Source</a> · <a href="examples/history.txt">Plain text</a>
 </td>
 </tr>
+<tr>
+<td width="50%">
+<a href="assets/bars.svg"><img src="assets/bars.png" alt="Bars: Compare request volumes by region." width="640"></a><br>
+<strong>Bars</strong> — Compare request volumes by region.<br>
+<a href="examples/regions.json">Source</a> · <a href="examples/bars.txt">Plain text</a>
+</td>
+<td width="50%">
+<a href="assets/trend.svg"><img src="assets/trend.png" alt="Trend: Weekly signups with braille detail." width="640"></a><br>
+<strong>Trend</strong> — Weekly signups with braille detail.<br>
+<a href="examples/signups.json">Source</a> · <a href="examples/trend.txt">Plain text</a>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<a href="assets/pie.svg"><img src="assets/pie.png" alt="Pie: How an agent spends its time." width="640"></a><br>
+<strong>Pie</strong> — How an agent spends its time.<br>
+<a href="examples/pie.mmd">Source</a> · <a href="examples/pie.txt">Plain text</a>
+</td>
+<td width="50%">
+<a href="assets/flows.svg"><img src="assets/flows.png" alt="Sankey: Follow visits through the site to reads and signups." width="640"></a><br>
+<strong>Sankey</strong> — Follow visits through the site to reads and signups.<br>
+<a href="examples/traffic.json">Source</a> · <a href="examples/flows.txt">Plain text</a>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<a href="assets/gantt.svg"><img src="assets/gantt.png" alt="Gantt: Schedule build, test, and delivery." width="640"></a><br>
+<strong>Gantt</strong> — Schedule build, test, and delivery.<br>
+<a href="examples/gantt.mmd">Source</a> · <a href="examples/gantt.txt">Plain text</a>
+</td>
+<td width="50%">
+<a href="assets/radar.svg"><img src="assets/radar.png" alt="Radar: Score hosted delivery on six criteria." width="640"></a><br>
+<strong>Radar</strong> — Score hosted delivery on six criteria.<br>
+<a href="examples/radar.mmd">Source</a> · <a href="examples/radar.txt">Plain text</a>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<a href="assets/kanban.svg"><img src="assets/kanban.png" alt="Kanban: Track tasks by current status." width="640"></a><br>
+<strong>Kanban</strong> — Track tasks by current status.<br>
+<a href="examples/kanban.mmd">Source</a> · <a href="examples/kanban.txt">Plain text</a>
+</td>
+<td width="50%">
+<a href="assets/quadrant.svg"><img src="assets/quadrant.png" alt="Quadrant: Prioritize fixes by effort and impact." width="640"></a><br>
+<strong>Quadrant</strong> — Prioritize fixes by effort and impact.<br>
+<a href="examples/quadrant.mmd">Source</a> · <a href="examples/quadrant.txt">Plain text</a>
+</td>
+</tr>
 </table>
+<!-- gallery:end -->
 
-Every preview is generated from its linked source by the bundled renderer. Gallery colors style the documentation; chat output is monochrome. The examples use illustrative data.
+**Also supported:** block, architecture, requirement, treemap, journey, timeline, packet, heatmap, funnel, and Git log input (the Git history tile uses lanes JSON).
+
+Every preview is generated from its linked source by the bundled renderer. The examples use illustrative data.
 
 | Skill | Authoring surface | Also supports |
 |---|---|---|
@@ -119,7 +183,7 @@ npx skills add apresmoi/glyphcss-diagrams --global --skill glyphcss-diagrams
 
 ## Just ask
 
-> Plot weekly signups: 14, 22, 18, 31, 28, 44, 51, 47. Show the trend directly in chat.
+> Plot our weekly signups for the last two months. Show the trend directly in chat.
 
 > Draw our delivery workflow: push, run tests, ship if they pass, otherwise fix and retry.
 
@@ -139,7 +203,7 @@ You can name `glyphcss-diagrams` explicitly for charts or diagrams. In Claude's 
 
 Diagrams wrap labels, adjust spacing, try the other orientation, and grow taller as needed. The renderer checks dimensions and graph coverage. Charts reject data loss; the agent can split crowded data into complete smaller charts. The skill never asks you to measure your window or mistake a tool subprocess's TTY for the chat viewport.
 
-Line and area charts select the braille charset by default. The renderer applies the same mark defaults to JSON and Mermaid: trends use braille; chat radar uses a braille outer contour/spokes and whole-cell `• ○ × +` series (recommended for one series; first series wins shared cells); pies use ASCII fills and no default legend, and fail if a slice loses its callout. Mermaid keeps its 72×24 budget. Other chat charts and diagrams select box characters. `--charset ascii` provides a strict ASCII option. Actual renderer output goes into the reply; file exports are optional when requested.
+Line and area charts select the braille charset by default. The renderer applies the same mark defaults to JSON and Mermaid: trends use braille; chat radar uses a braille outer contour/spokes and whole-cell `• ○ × +` series (recommended for one series; first series wins shared cells); pies use `█ ▓ ▒ ░ ·` shade fills and no default legend, and fail if a slice loses its callout. Mermaid keeps its 72×24 budget. Other chat charts and diagrams select box characters. `--charset ascii` provides a strict ASCII option. Actual renderer output goes into the reply; file exports are optional when requested.
 
 ## Built on Glyphcss
 
@@ -167,10 +231,10 @@ npm test
 npm run gallery
 ```
 
-For a checkout nested inside the library repository, pass `--source ..`. `npm test` checks the committed bundles, packaging, and installer behavior without development dependencies. `npm run gallery` renders the six example sources into plain text, SVG, and PNG; the graphics are reproducible outputs of the libraries.
+For a checkout nested inside the library repository, pass `--source ..`. `npm test` checks the committed bundles, packaging, and installer behavior without development dependencies. `npm run gallery` renders the 16 example sources into plain text, SVG, and PNG; the graphics are reproducible outputs of the libraries.
 
 </details>
 
 ## License
 
-[MIT](LICENSE). The renderer code comes from [Glyphcss](https://github.com/apresmoi/glyphcss), also MIT. Bundled third-party [notices](skills/glyphcss-diagrams/scripts/NOTICE.txt) ship with the skill.
+[MIT](LICENSE) · Copyright (c) 2026 apresmoi. The renderer code comes from [Glyphcss](https://github.com/apresmoi/glyphcss), also MIT. Bundled third-party [notices](skills/glyphcss-diagrams/scripts/NOTICE.txt) ship with the skill.

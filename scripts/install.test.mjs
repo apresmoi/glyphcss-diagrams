@@ -39,7 +39,7 @@ function renderInstalled(dest, cwd) {
       assert.equal(output.meta.values, input.startsWith('pie') ? 2 : 4);
       if (input.startsWith('pie')) {
         assert.match(output.text, /First/); assert.match(output.text, /Second/);
-        assert.match(output.text, /#/);
+        assert.match(output.text, /█/);
       }
     }
     else { assert.match(output.text, /Start/); assert.match(output.text, /Done/); }
