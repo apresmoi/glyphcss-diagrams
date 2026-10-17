@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, readdirSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, readdirSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -20,8 +20,12 @@ function run(action, args, cwd, env = process.env) {
 
 function renderInstalled(dest, cwd) {
   const examples = [
-    ['glyphcss-charts', '[2,4,3,8]', 'chart'],
+    ['glyphcss-diagrams', '[2,4,3,8]', 'chart'],
     ['glyphcss-diagrams', 'flowchart LR\n A[Start] --> B[Done]', 'graph'],
+    ['glyphcss-diagrams', 'pie\n"First": 6\n"Second": 4', 'chart'],
+    ['glyphcss-diagrams', '{"type":"bar","data":[2,4,3,8],"channels":{}}', 'chart'],
+    ['glyphcss-diagrams', '{"nodes":[{"id":"a","label":"Start"},{"id":"b","label":"Done"}],"edges":[{"from":"a","to":"b"}]}', 'graph'],
+    ['glyphcss-diagrams', 'sequenceDiagram\n participant A as Start\n participant B as Done\n A->>B: Hello', 'sequence'],
   ];
   for (const [skill, input, kind] of examples) {
     const result = spawnSync(process.execPath, [join(dest, skill, 'scripts/render.mjs'), '--json'], { cwd, input, encoding: 'utf8', timeout: 15_000 });
@@ -31,7 +35,13 @@ function renderInstalled(dest, cwd) {
     assert.equal(output.kind, kind);
     assert.ok(output.text.length > 4);
     assert.ok(output.pages.every(page => page.columns <= 72 && page.rows <= 24));
-    if (kind === 'chart') assert.equal(output.meta.values, 4);
+    if (kind === 'chart') {
+      assert.equal(output.meta.values, input.startsWith('pie') ? 2 : 4);
+      if (input.startsWith('pie')) {
+        assert.match(output.text, /First/); assert.match(output.text, /Second/);
+        assert.match(output.text, /#/);
+      }
+    }
     else { assert.match(output.text, /Start/); assert.match(output.text, /Done/); }
   }
 }
@@ -79,7 +89,7 @@ for (const copy of [false, true]) {
     assert.equal(readFileSync(join(dest, 'unrelated', 'keep.txt'), 'utf8'), 'keep');
   });
 
-  test(`${copy ? 'copy to symlink' : 'symlink to copy'} mode changes refuse before either destination changes`, t => {
+  test(`${copy ? 'copy to symlink' : 'symlink to copy'} mode changes refuse before any destination changes`, t => {
     const { directory, dest } = sandbox(t);
     assert.equal(run('install', ['--dest', dest, ...(copy ? ['--copy'] : [])], directory).status, 0);
     const targets = SKILLS.map(skill => join(dest, skill));
@@ -98,13 +108,16 @@ for (const copy of [false, true]) {
       content: copy ? readFileSync(join(target, '.glyphcss-install.json'), 'utf8') : readlinkSync(target),
     })), before);
 
-    // A later conflict must also leave an earlier missing skill absent.
+    // A later retired-target conflict must leave the current missing skill absent.
     rmSync(targets[0], { recursive: true });
+    const legacy = join(dest, 'glyphcss-charts');
+    symlinkSync(join(ROOT, 'skills/glyphcss-charts'), legacy, 'dir');
+    const legacyInode = lstatSync(legacy).ino;
     const partial = run('install', requested, directory);
     assert.equal(partial.status, 1);
-    assert.match(partial.stderr, /Uninstall first/);
+    assert.match(partial.stderr, /Run node uninstall/);
     assert.equal(existsSync(targets[0]), false);
-    assert.equal(lstatSync(targets[1]).ino, before[1].inode);
+    assert.equal(lstatSync(legacy).ino, legacyInode);
   });
 }
 
@@ -129,12 +142,12 @@ test('copy receipts use deterministic ordering and tolerate reordered file recor
   assert.deepEqual(readdirSync(dest), []);
 });
 
-test('file, directory, and unrelated-link conflicts abort before either install', t => {
+test('file, directory, and unrelated-link conflicts abort before installing', t => {
   const { directory } = sandbox(t);
   for (const kind of ['file', 'directory', 'link']) {
     const dest = join(directory, kind);
     mkdirSync(dest);
-    const conflict = join(dest, SKILLS[1]);
+    const conflict = join(dest, 'glyphcss-charts');
     const other = join(directory, `other-${kind}`);
     if (kind === 'file') writeFileSync(conflict, 'keep');
     if (kind === 'directory') { mkdirSync(conflict); writeFileSync(join(conflict, 'keep.txt'), 'keep'); }
@@ -149,11 +162,10 @@ test('file, directory, and unrelated-link conflicts abort before either install'
   }
 });
 
-test('uninstall preflights both skills and leaves an unrelated link intact', t => {
+test('uninstall preflights current and retired skills and leaves an unrelated link intact', t => {
   const { directory, dest } = sandbox(t);
   assert.equal(run('install', ['--dest', dest], directory).status, 0);
-  const target = join(dest, SKILLS[1]);
-  unlinkSync(target);
+  const target = join(dest, 'glyphcss-charts');
   const other = join(directory, 'other');
   mkdirSync(other);
   symlinkSync(other, target, 'dir');
@@ -168,7 +180,7 @@ test('modified copies and newly added empty directories are never removed', t =>
   for (const modification of ['file', 'directory']) {
     const dest = join(directory, modification);
     assert.equal(run('install', ['--dest', dest, '--copy'], directory).status, 0);
-    const target = join(dest, SKILLS[1]);
+    const target = join(dest, SKILLS[0]);
     if (modification === 'file') writeFileSync(join(target, 'SKILL.md'), 'user edits');
     else mkdirSync(join(target, 'user-folder'));
     const result = run('uninstall', ['--dest', dest], directory);
@@ -186,4 +198,53 @@ test('destination selection is explicit and invalid arguments do not write', t =
     assert.equal(run('install', args, directory).status, 1);
     assert.equal(existsSync(dest), false);
   }
+});
+
+for (const copy of [false, true]) {
+  test(`uninstall removes both a previous current and retired ${copy ? 'receipt-owned copy' : 'dangling owned link'}`, t => {
+    const { directory, dest } = sandbox(t);
+    assert.equal(run('install', ['--dest', dest, ...(copy ? ['--copy'] : [])], directory).status, 0);
+    const legacy = join(dest, 'glyphcss-charts');
+    if (copy) {
+      cpSync(join(dest, SKILLS[0]), legacy, { recursive: true });
+      const receiptPath = join(legacy, '.glyphcss-install.json');
+      const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+      receipt.skill = 'glyphcss-charts';
+      writeFileSync(receiptPath, JSON.stringify(receipt));
+    } else symlinkSync(join(ROOT, 'skills/glyphcss-charts'), legacy, 'dir');
+    const before = readdirSync(dest).map(name => lstatSync(join(dest, name)).ino);
+    const refused = run('install', ['--dest', dest, ...(copy ? ['--copy'] : [])], directory);
+    assert.equal(refused.status, 1);
+    assert.match(refused.stderr, /Retired glyphcss-charts.*Run node uninstall/);
+    assert.equal(refused.stdout, '');
+    assert.deepEqual(readdirSync(dest).map(name => lstatSync(join(dest, name)).ino), before);
+    const removed = run('uninstall', ['--dest', dest], directory);
+    assert.equal(removed.status, 0, removed.stderr);
+    assert.match(removed.stdout, /Removed .*glyphcss-charts/);
+    assert.match(removed.stdout, /Removed .*glyphcss-diagrams/);
+    assert.deepEqual(readdirSync(dest), []);
+  });
+}
+
+test('modified receipt-owned retired copies block both actions before current removal or creation', t => {
+  const { directory, dest } = sandbox(t);
+  assert.equal(run('install', ['--dest', dest, '--copy'], directory).status, 0);
+  const legacy = join(dest, 'glyphcss-charts');
+  cpSync(join(dest, SKILLS[0]), legacy, { recursive: true });
+  const receiptPath = join(legacy, '.glyphcss-install.json');
+  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+  receipt.skill = 'glyphcss-charts';
+  writeFileSync(receiptPath, JSON.stringify(receipt));
+  mkdirSync(join(legacy, 'user-empty-directory'));
+  for (const action of ['install', 'uninstall']) {
+    const refused = run(action, ['--dest', dest, ...(action === 'install' ? ['--copy'] : [])], directory);
+    assert.equal(refused.status, 1);
+    assert.match(refused.stderr, /modified copy/);
+    assert.equal(refused.stdout, '');
+    assert.ok(existsSync(join(dest, SKILLS[0])));
+    assert.ok(existsSync(join(legacy, 'user-empty-directory')));
+  }
+  rmSync(join(dest, SKILLS[0]), { recursive: true });
+  assert.equal(run('install', ['--dest', dest], directory).status, 1);
+  assert.equal(existsSync(join(dest, SKILLS[0])), false);
 });

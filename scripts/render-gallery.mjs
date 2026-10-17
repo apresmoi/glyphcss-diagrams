@@ -22,7 +22,7 @@ const svg = (width, height, title, body, description = title) => `<svg xmlns="ht
 
 const rendered = new Map();
 for (const spec of manifest) {
-  const args = [join(root, `skills/glyphcss-${spec.skill}/scripts/render.mjs`), join(examples, spec.source), '--width', String(spec.width), '--height', String(spec.height), '--json'];
+  const args = [join(root, 'skills/glyphcss-diagrams/scripts/render.mjs'), join(examples, spec.source), '--width', String(spec.width), '--height', String(spec.height), '--json'];
   if (spec.kind) args.push('--kind', spec.kind);
   const result = spawnSync(process.execPath, args, { encoding: 'utf8', timeout: 30_000 });
   assert.ifError(result.error);

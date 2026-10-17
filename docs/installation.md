@@ -1,8 +1,8 @@
 # Installation
 
-Glyphcss diagrams & charts includes two skills: `glyphcss-charts` and `glyphcss-diagrams`. Both produce character output directly in chat and use the bundled [Glyphcss renderers](https://github.com/apresmoi/glyphcss). They require **Node.js 22+** on the machine where the agent executes commands. Rendering needs no npm install, API key, or upstream checkout.
+Glyphcss diagrams & charts includes one skill: `glyphcss-diagrams`. It produces character output directly in chat and uses the bundled [Glyphcss renderers](https://github.com/apresmoi/glyphcss). It requires **Node.js 22+** on the machine where the agent executes commands. Rendering needs no npm install, API key, or upstream checkout.
 
-Choose one installation route per host to avoid duplicate skills. Restart the host or start a new session after installing. Then ask: “Use glyphcss-charts to chart 2, 4, 3, 8 directly in chat” or “Use glyphcss-diagrams to draw Request → Agent → Answer.”
+Choose one installation route per host to avoid duplicate skills. Restart the host or start a new session after installing. Then ask: “Use glyphcss-diagrams to chart 2, 4, 3, 8 directly in chat” or “Use glyphcss-diagrams to draw Request → Agent → Answer.”
 
 ## Claude Code
 
@@ -14,7 +14,7 @@ claude plugin install glyphcss-diagrams@glyphcss-diagrams
 claude plugin details glyphcss-diagrams@glyphcss-diagrams
 ```
 
-The same commands are available as `/plugin marketplace add` and `/plugin install` inside Claude Code. The plugin exposes both shared skill folders; the explicit commands are `/glyphcss-diagrams:glyphcss-charts` and `/glyphcss-diagrams:glyphcss-diagrams`. See [Claude's marketplace documentation](https://code.claude.com/docs/en/plugin-marketplaces).
+The same commands are available as `/plugin marketplace add` and `/plugin install` inside Claude Code. The plugin exposes the shared skill folder; the explicit command is `/glyphcss-diagrams:glyphcss-diagrams`. See [Claude's marketplace documentation](https://code.claude.com/docs/en/plugin-marketplaces).
 
 ## Codex
 
@@ -42,7 +42,7 @@ See [Copilot's plugin installation documentation](https://docs.github.com/en/cop
 
 ## Factory Droid
 
-The native Factory manifest and marketplace include both skills:
+The native Factory manifest and marketplace include the skill:
 
 ```sh
 droid plugin marketplace add https://github.com/apresmoi/glyphcss-diagrams
@@ -54,27 +54,26 @@ See [Factory's plugin documentation](https://docs.factory.com/harness/plugins).
 
 ## Pi
 
-The repository is also a Pi package. Its package metadata lists the two skill directories explicitly:
+The repository is also a Pi package. Its package metadata lists the skill directory explicitly:
 
 ```sh
 pi install https://github.com/apresmoi/glyphcss-diagrams
 pi list
 ```
 
-Run `/reload` in an existing session. The explicit invocations are `/skill:glyphcss-charts` and `/skill:glyphcss-diagrams`. No npm publication is required for this Git installation. See [Pi's package documentation](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md).
+Run `/reload` in an existing session. The explicit invocation is `/skill:glyphcss-diagrams`. No npm publication is required for this Git installation. See [Pi's package documentation](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md).
 
 ## Kiro
 
-Import both Agent Skills using their repository folder URLs:
+Import the Agent Skill using its repository folder URL:
 
-- [glyphcss-charts](https://github.com/apresmoi/glyphcss-diagrams/tree/main/skills/glyphcss-charts)
 - [glyphcss-diagrams](https://github.com/apresmoi/glyphcss-diagrams/tree/main/skills/glyphcss-diagrams)
 
 Kiro's skill importer copies the skill contents into its workspace or global skills directory. Re-import to update. See [Kiro's Agent Skills documentation](https://kiro.dev/docs/skills/).
 
 ## Grok, Antigravity, Cursor, OpenCode, and editable installs
 
-The dependency-free installer links both skills from a local checkout. Choose a single provider in the last command; this example installs for Grok:
+The dependency-free installer links the skill from a local checkout. Choose a single provider in the last command; this example installs for Grok:
 
 ```sh
 git clone https://github.com/apresmoi/glyphcss-diagrams.git
@@ -97,26 +96,26 @@ Grok's `inspect --json` reports discovered skills and their source paths. Antigr
 
 Use `--dest /absolute/path/to/skills` instead of `--provider` for another host or a project-local installation. Append `--copy` to install independent folders, including on Windows systems that cannot create directory symlinks. The checkout must remain at its original location for symlink installs.
 
-The installer requires an explicit destination and checks both skills before changing either. Repeating the same install is a no-op. To switch between symlinks and copies, uninstall first; a mode mismatch is refused. It refuses unrelated files, folders, and links. Copies include an ownership receipt; changed or extended copies are preserved, including during uninstall.
+The installer requires an explicit destination and checks the current and retired skill destinations before changing either. Repeating the same install is a no-op. To switch between symlinks and copies, uninstall first; a mode mismatch is refused. It refuses unrelated files, folders, and links. Copies include an ownership receipt; changed or extended copies are preserved, including during uninstall.
 
-To remove a standalone installation, run `node uninstall.mjs --provider NAME` or `node uninstall.mjs --dest DIRECTORY` from this checkout. Only links to this checkout and unchanged copies carrying its receipt are removed. Other skills stay intact. These scripts do not edit host configuration files or manage native plugin installations.
+To remove a standalone installation, run `node uninstall.mjs --provider NAME` or `node uninstall.mjs --dest DIRECTORY` from this checkout. Only links to this checkout and unchanged copies carrying its receipt are removed. An owned retired `glyphcss-charts` link (even dangling) or unchanged receipt-owned copy is also removed. Installing with a retired folder present stops and instructs you to uninstall first. Unrelated or modified retired folders stop both actions before any mutation; move them aside yourself. Other skills stay intact. These scripts do not edit host configuration files or manage native plugin installations.
 
 ## Other Agent Skills hosts
 
-The cross-agent skills CLI discovers both skill folders and lets you select the hosts to install into:
+The cross-agent skills CLI discovers the skill folder and lets you select the hosts to install into:
 
 ```sh
 npx skills add apresmoi/glyphcss-diagrams
 ```
 
-Select both skills and the hosts you use, such as Cline, Amp, Gemini CLI, Windsurf, Zed, Warp, Roo, or Kilo. This route depends on the current [skills CLI](https://skills.sh) host support; it is a standalone skill installation, not a native plugin for every provider.
+Select the skill and the hosts you use, such as Cline, Amp, Gemini CLI, Windsurf, Zed, Warp, Roo, or Kilo. This route depends on the current [skills CLI](https://skills.sh) host support; it is a standalone skill installation, not a native plugin for every provider.
 
 ## Updates and local checks
 
 - Native plugins: use the host's marketplace refresh and plugin update commands. Codex can refresh this source with `codex plugin marketplace upgrade glyphcss-diagrams`; start a new session afterward.
 - Symlink installs: pull the checkout's latest changes and restart the host.
 - Copy installs: uninstall the unchanged copies, pull the checkout, and install again with `--copy`. If a copy has local edits, move it aside yourself first; the installer will not discard them.
-- Pi: `pi update --extensions` refreshes unpinned packages. Kiro: re-import the two folders.
+- Pi: `pi update --extensions` refreshes unpinned packages. Kiro: re-import the folder.
 
 For a local native package check, clone the repository and validate its manifests:
 

@@ -41,7 +41,6 @@
   ],
   "pi": {
     "skills": [
-      "./skills/glyphcss-charts",
       "./skills/glyphcss-diagrams"
     ]
   },
@@ -50,7 +49,6 @@
     ".codex-plugin/",
     ".agents/plugins/",
     ".factory-plugin/",
-    "skills/glyphcss-charts/",
     "skills/glyphcss-diagrams/",
     "assets/",
     "docs/installation.md",

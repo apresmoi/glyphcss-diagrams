@@ -6,7 +6,7 @@
 </h1>
 
 <p align="center">
-  <strong>Two agent skills for charts and diagrams, directly in chat or your terminal.</strong><br>
+  <strong>One agent skill for charts and diagrams, directly in chat or your terminal.</strong><br>
   <a href="#install">Install</a> · <a href="#what-it-renders">Gallery</a> · <a href="#just-ask">Example prompts</a> · <a href="docs/installation.md">All providers</a> · <a href="LICENSE">MIT license</a>
 </p>
 
@@ -61,12 +61,11 @@ Every preview is generated from its linked source by the bundled renderer. Galle
 
 | Skill | Authoring surface | Also supports |
 |---|---|---|
-| [glyphcss-charts](skills/glyphcss-charts/SKILL.md) | JSON data and marks | Scatter plots, heatmaps, arcs, multiple series, transforms, scales, axes |
-| [glyphcss-diagrams](skills/glyphcss-diagrams/SKILL.md) | Mermaid, graph JSON, sequence JSON, Git log | Node shapes, groups, labeled edges, sequence frames, lane histories |
+| [glyphcss-diagrams](skills/glyphcss-diagrams/SKILL.md) | Mermaid, chart/graph/sequence JSON, Git log | Charts, transforms, scales, axes, node shapes, groups, labeled edges, sequence frames, lane histories |
 
 ## Install
 
-Choose one route for each agent. Each route installs the same two skills, including their self-contained renderers. **Rendering needs Node.js 22+; it needs no package installation or API key.** Start a new agent session after installing.
+Choose one route for each agent. Each route installs the same skill, including its self-contained renderer. **Rendering needs Node.js 22+; it needs no package installation or API key.** Start a new agent session after installing.
 
 ### Claude Code
 
@@ -75,7 +74,7 @@ claude plugin marketplace add apresmoi/glyphcss-diagrams
 claude plugin install glyphcss-diagrams@glyphcss-diagrams
 ```
 
-Inside Claude Code, the equivalents are `/plugin marketplace add` and `/plugin install`. Both skills are included in the plugin.
+Inside Claude Code, the equivalents are `/plugin marketplace add` and `/plugin install`. The skill is included in the plugin.
 
 ### Codex
 
@@ -88,7 +87,7 @@ For clients without the plugin CLI, use the standalone installer below.
 
 ### Standalone skills and editable installs
 
-Clone once, then link both skills to the providers you use. These commands install for Claude Code and Codex:
+Clone once, then link the skill to the providers you use. These commands install for Claude Code and Codex:
 
 ```sh
 test -d glyphcss-diagrams/.git || git clone https://github.com/apresmoi/glyphcss-diagrams.git
@@ -102,7 +101,7 @@ The installer is dependency-free and safe to rerun. It preserves unrelated insta
 For the cross-agent installer:
 
 ```sh
-npx skills add apresmoi/glyphcss-diagrams --global --skill glyphcss-charts --skill glyphcss-diagrams
+npx skills add apresmoi/glyphcss-diagrams --global --skill glyphcss-diagrams
 ```
 
 ### More providers
@@ -111,11 +110,11 @@ npx skills add apresmoi/glyphcss-diagrams --global --skill glyphcss-charts --ski
 |---|---|
 | GitHub Copilot CLI | [Native marketplace plugin](docs/installation.md#github-copilot-cli) |
 | Factory Droid | [Native marketplace plugin](docs/installation.md#factory-droid) |
-| Pi | [Git package with both skills](docs/installation.md#pi) |
+| Pi | [Git package with the skill](docs/installation.md#pi) |
 | Grok | [Standalone installer](docs/installation.md#grok-antigravity-cursor-opencode-and-editable-installs) |
 | Antigravity CLI / IDE | [Separate provider targets](docs/installation.md#grok-antigravity-cursor-opencode-and-editable-installs) |
 | Cursor / OpenCode | [Standalone installer](docs/installation.md#grok-antigravity-cursor-opencode-and-editable-installs) |
-| Kiro | [Import the two skill folders](docs/installation.md#kiro) |
+| Kiro | [Import the skill folder](docs/installation.md#kiro) |
 | Other Agent Skills hosts | [Cross-agent installer or a custom skills directory](docs/installation.md#other-agent-skills-hosts) |
 
 ## Just ask
@@ -128,7 +127,7 @@ npx skills add apresmoi/glyphcss-diagrams --global --skill glyphcss-charts --ski
 
 > Compare these regions with a bar chart. Keep the original values and units.
 
-You can name `glyphcss-charts` or `glyphcss-diagrams` explicitly. In Claude's plugin, the skill commands are `/glyphcss-diagrams:glyphcss-charts` and `/glyphcss-diagrams:glyphcss-diagrams`.
+You can name `glyphcss-diagrams` explicitly for charts or diagrams. In Claude's plugin, the command is `/glyphcss-diagrams:glyphcss-diagrams`.
 
 ## How it fits
 
@@ -138,9 +137,9 @@ You can name `glyphcss-charts` or `glyphcss-diagrams` explicitly. In Claude's pl
 | Direct terminal output | Reads stdout's actual TTY dimensions, with a small margin; otherwise 80 × 24 |
 | Explicit size | `--width N --height N` in character cells |
 
-Diagrams wrap labels, adjust spacing, try the other orientation, and paginate as needed. The renderer checks dimensions and graph coverage. Charts reject data loss; the agent can split crowded data into complete smaller charts. The skills never ask you to measure your window or mistake a tool subprocess's TTY for the chat viewport.
+Diagrams wrap labels, adjust spacing, try the other orientation, and grow taller as needed. The renderer checks dimensions and graph coverage. Charts reject data loss; the agent can split crowded data into complete smaller charts. The skill never asks you to measure your window or mistake a tool subprocess's TTY for the chat viewport.
 
-Line and area charts select the braille charset by default. Other chat charts and diagrams select box characters. `--charset ascii` provides a strict ASCII option. Actual renderer output goes into the reply; file exports are optional when requested.
+Line and area charts select the braille charset by default. The renderer applies the same mark defaults to JSON and Mermaid: trends use braille; chat radar uses a braille outer contour/spokes and whole-cell `• ○ × +` series (recommended for one series; first series wins shared cells); pies use ASCII fills and no default legend, and fail if a slice loses its callout. Mermaid keeps its 72×24 budget. Other chat charts and diagrams select box characters. `--charset ascii` provides a strict ASCII option. Actual renderer output goes into the reply; file exports are optional when requested.
 
 ## Built on Glyphcss
 
@@ -148,7 +147,7 @@ This repository owns the **skills, provider packaging, installers, and bundled c
 
 - [Chart library and API](https://github.com/apresmoi/glyphcss/tree/main/packages/charts) — marks, data, scales, axes, and text rendering.
 - [Diagram library and API](https://github.com/apresmoi/glyphcss/tree/main/packages/diagrams) — graph layout, Mermaid, sequences, and lanes.
-- [Chart authoring reference](skills/glyphcss-charts/references/spec.md) · [Diagram authoring reference](skills/glyphcss-diagrams/references/source.md).
+- [Chart authoring reference](skills/glyphcss-diagrams/references/charts.md) · [Diagram authoring reference](skills/glyphcss-diagrams/references/diagrams.md).
 
 The committed bundles let an installed skill run independently of either checkout. Rebuilding them requires an explicit library source path.
 
@@ -174,4 +173,4 @@ For a checkout nested inside the library repository, pass `--source ..`. `npm te
 
 ## License
 
-[MIT](LICENSE). The renderer code comes from [Glyphcss](https://github.com/apresmoi/glyphcss), also MIT. Bundled third-party notices ship with each skill: [charts](skills/glyphcss-charts/scripts/NOTICE.txt) and [diagrams](skills/glyphcss-diagrams/scripts/NOTICE.txt).
+[MIT](LICENSE). The renderer code comes from [Glyphcss](https://github.com/apresmoi/glyphcss), also MIT. Bundled third-party [notices](skills/glyphcss-diagrams/scripts/NOTICE.txt) ship with the skill.

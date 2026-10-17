@@ -1,7 +1,6 @@
 [
   {
     "id": "trend",
-    "skill": "charts",
     "source": "signups.json",
     "width": 58,
     "height": 16,
@@ -10,7 +9,6 @@
   },
   {
     "id": "bars",
-    "skill": "charts",
     "source": "regions.json",
     "width": 48,
     "height": 14,
@@ -19,7 +17,6 @@
   },
   {
     "id": "flows",
-    "skill": "charts",
     "source": "traffic.json",
     "width": 58,
     "height": 22,
@@ -28,7 +25,6 @@
   },
   {
     "id": "workflow",
-    "skill": "diagrams",
     "source": "delivery.mmd",
     "width": 48,
     "height": 20,
@@ -37,7 +33,6 @@
   },
   {
     "id": "sequence",
-    "skill": "diagrams",
     "source": "conversation.mmd",
     "width": 58,
     "height": 18,
@@ -46,7 +41,6 @@
   },
   {
     "id": "history",
-    "skill": "diagrams",
     "source": "history.json",
     "width": 58,
     "height": 16,
