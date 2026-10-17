@@ -1,9 +1,12 @@
 classDiagram
-  class Task {
-    +id: string
-    +run()
+  class Shape {
+    +area() float
   }
-  class Result {
-    +ok: bool
+  class Circle {
+    +radius float
   }
-  Task --> Result : returns
+  class Square {
+    +side float
+  }
+  Shape <|-- Circle
+  Shape <|-- Square

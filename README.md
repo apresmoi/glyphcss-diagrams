@@ -34,25 +34,25 @@ Describe a workflow, paste Mermaid, or hand your agent some data. It chooses a l
 </tr>
 <tr>
 <td width="50%">
-<a href="assets/state.svg"><img src="assets/state.png" alt="State: A task moves from queued to done." width="640"></a><br>
-<strong>State</strong> — A task moves from queued to done.<br>
+<a href="assets/state.svg"><img src="assets/state.png" alt="State: A draft loops through review until it is published." width="640"></a><br>
+<strong>State</strong> — A draft loops through review until it is published.<br>
 <a href="examples/state.mmd">Source</a> · <a href="examples/state.txt">Plain text</a>
 </td>
 <td width="50%">
-<a href="assets/class.svg"><img src="assets/class.png" alt="Class: Types, members, and a returned result." width="640"></a><br>
-<strong>Class</strong> — Types, members, and a returned result.<br>
+<a href="assets/class.svg"><img src="assets/class.png" alt="Class: A base class and the subclasses that extend it." width="640"></a><br>
+<strong>Class</strong> — A base class and the subclasses that extend it.<br>
 <a href="examples/class.mmd">Source</a> · <a href="examples/class.txt">Plain text</a>
 </td>
 </tr>
 <tr>
 <td width="50%">
-<a href="assets/er.svg"><img src="assets/er.png" alt="ER: Tables, keys, and ownership." width="640"></a><br>
-<strong>ER</strong> — Tables, keys, and ownership.<br>
+<a href="assets/er.svg"><img src="assets/er.png" alt="ER: Tables, relationships and cardinalities." width="640"></a><br>
+<strong>ER</strong> — Tables, relationships and cardinalities.<br>
 <a href="examples/er.mmd">Source</a> · <a href="examples/er.txt">Plain text</a>
 </td>
 <td width="50%">
-<a href="assets/c4.svg"><img src="assets/c4.png" alt="C4: People, systems, and their calls." width="640"></a><br>
-<strong>C4</strong> — People, systems, and their calls.<br>
+<a href="assets/c4.svg"><img src="assets/c4.png" alt="C4: A customer, the system and the services it calls." width="640"></a><br>
+<strong>C4</strong> — A customer, the system and the services it calls.<br>
 <a href="examples/c4.mmd">Source</a> · <a href="examples/c4.txt">Plain text</a>
 </td>
 </tr>
@@ -63,9 +63,9 @@ Describe a workflow, paste Mermaid, or hand your agent some data. It chooses a l
 <a href="examples/mindmap.mmd">Source</a> · <a href="examples/mindmap.txt">Plain text</a>
 </td>
 <td width="50%">
-<a href="assets/history.svg"><img src="assets/history.png" alt="Git history: Branches and merges in a release." width="640"></a><br>
-<strong>Git history</strong> — Branches and merges in a release.<br>
-<a href="examples/history.json">Source</a> · <a href="examples/history.txt">Plain text</a>
+<a href="assets/history.svg"><img src="assets/history.png" alt="Git history: Feature branches, a hotfix and tagged releases." width="640"></a><br>
+<strong>Git history</strong> — Feature branches, a hotfix and tagged releases.<br>
+<a href="examples/history.mmd">Source</a> · <a href="examples/history.txt">Plain text</a>
 </td>
 </tr>
 <tr>

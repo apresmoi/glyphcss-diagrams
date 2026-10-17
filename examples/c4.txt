@@ -1,18 +1,11 @@
-                  ╭──────────╮
-                  │   User   │
-                  │ [person] │
-                  ╰──────────╯
-                       │
-              Requests │
-                       │
-                  ┌────▼─────┐
-                  │   Agent  │
-                  │ [system] │
-                  └──────────┘
-                       │
-                 Reads │
-                       │
-             ┌─────────▼──────────┐
-             │     Repository     │
-             │ [system, external] │
-             └────────────────────┘
+                                         ┌───────────┐
+                                 Charges │ Payments  │
+                                      ┌──▶ [system,  │
+                                      │  │ external] │
+     ╭──────────╮ Orders ┌──────────┐ │  └───────────┘
+     │ Customer │────────▶ Web shop ├─┤
+     │ [person] │        │ [system] │ │  ┌───────────┐
+     ╰──────────╯        └──────────┘ │  │   Email   │
+                                      └──▶ [system,  │
+                                   Sends │ external] │
+                                         └───────────┘

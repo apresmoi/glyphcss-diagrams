@@ -1,6 +1,16 @@
-            *   (v1.0)  Ship charts + diagrams
-            ├─╮
-            │ * (skills)  Add text renderers
-            * │ (main)  Refine the API
-            ├─╯
-            *   Start with glyphcss
+       *         init
+       ├─┬─────╮
+       │ *     │ api
+       │ ├─┬─╮ │
+       │ │ * │ │ login
+       │ │ * │ │ tokens  (feature/auth)
+       │ │ │ * │ index  (feature/search)
+       │ ├─╯ │ │
+       │ *   │ │ auth  (merge)
+       │ │   │ * patch  (hotfix)
+       ├─┼───┼─╯
+       * │   │   fix  (merge, tag: v1.0.1)
+       │ ├───╯
+       │ *       search  (develop, merge)
+       ├─╯
+       *         release  (main, merge, tag: v1.1.0)

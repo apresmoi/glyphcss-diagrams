@@ -1,5 +1,6 @@
 stateDiagram-v2
-  [*] --> Queued
-  Queued --> Running : start
-  Running --> Done : finish
-  Done --> [*]
+  [*] --> Draft
+  Draft --> Review: submit
+  Review --> Draft: changes
+  Review --> Published: approve
+  Published --> [*]

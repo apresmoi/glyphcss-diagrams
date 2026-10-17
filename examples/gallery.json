@@ -19,7 +19,7 @@
     "id": "state",
     "source": "state.mmd",
     "label": "State",
-    "description": "A task moves from queued to done.",
+    "description": "A draft loops through review until it is published.",
     "width": 48,
     "height": 24
   },
@@ -27,25 +27,25 @@
     "id": "class",
     "source": "class.mmd",
     "label": "Class",
-    "description": "Types, members, and a returned result.",
-    "width": 48,
-    "height": 24
+    "description": "A base class and the subclasses that extend it.",
+    "width": 60,
+    "height": 16
   },
   {
     "id": "er",
     "source": "er.mmd",
     "label": "ER",
-    "description": "Tables, keys, and ownership.",
-    "width": 48,
-    "height": 24
+    "description": "Tables, relationships and cardinalities.",
+    "width": 72,
+    "height": 12
   },
   {
     "id": "c4",
     "source": "c4.mmd",
     "label": "C4",
-    "description": "People, systems, and their calls.",
-    "width": 48,
-    "height": 24
+    "description": "A customer, the system and the services it calls.",
+    "width": 60,
+    "height": 14
   },
   {
     "id": "mindmap",
@@ -57,11 +57,11 @@
   },
   {
     "id": "history",
-    "source": "history.json",
+    "source": "history.mmd",
     "label": "Git history",
-    "description": "Branches and merges in a release.",
-    "width": 58,
-    "height": 16,
+    "description": "Feature branches, a hotfix and tagged releases.",
+    "width": 60,
+    "height": 24,
     "kind": "lanes"
   },
   {

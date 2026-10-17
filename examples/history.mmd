@@ -1,0 +1,25 @@
+gitGraph
+  commit id: "init"
+  branch develop
+  checkout develop
+  commit id: "api"
+  branch feature/auth
+  checkout feature/auth
+  commit id: "login"
+  commit id: "tokens"
+  checkout develop
+  branch feature/search
+  checkout feature/search
+  commit id: "index"
+  checkout develop
+  merge feature/auth id: "auth"
+  checkout main
+  branch hotfix
+  checkout hotfix
+  commit id: "patch"
+  checkout main
+  merge hotfix id: "fix" tag: "v1.0.1"
+  checkout develop
+  merge feature/search id: "search"
+  checkout main
+  merge develop id: "release" tag: "v1.1.0"
