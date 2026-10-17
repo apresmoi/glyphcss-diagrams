@@ -1,51 +1,131 @@
 [
   {
-    "id": "trend",
-    "source": "signups.json",
-    "width": 58,
-    "height": 16,
-    "label": "Braille trends",
-    "description": "Ordered values, smooth lines, readable axes."
-  },
-  {
-    "id": "bars",
-    "source": "regions.json",
-    "width": 48,
-    "height": 14,
-    "label": "Category comparisons",
-    "description": "Keep values and units in view."
-  },
-  {
-    "id": "flows",
-    "source": "traffic.json",
-    "width": 58,
-    "height": 22,
-    "label": "Flows and proportions",
-    "description": "Sankey flows with the original quantities."
-  },
-  {
     "id": "workflow",
     "source": "delivery.mmd",
+    "label": "Flowchart",
+    "description": "Decisions and a retry loop.",
     "width": 48,
-    "height": 20,
-    "label": "Decisions and loops",
-    "description": "Mermaid becomes a diagram in the conversation."
+    "height": 24
   },
   {
     "id": "sequence",
     "source": "conversation.mmd",
-    "width": 58,
-    "height": 18,
-    "label": "Message sequences",
-    "description": "Participants, requests, replies, and ordering."
+    "label": "Sequence",
+    "description": "Requests and replies between participants.",
+    "width": 60,
+    "height": 18
+  },
+  {
+    "id": "state",
+    "source": "state.mmd",
+    "label": "State",
+    "description": "A task moves from queued to done.",
+    "width": 48,
+    "height": 24
+  },
+  {
+    "id": "class",
+    "source": "class.mmd",
+    "label": "Class",
+    "description": "Types, members, and a returned result.",
+    "width": 48,
+    "height": 24
+  },
+  {
+    "id": "er",
+    "source": "er.mmd",
+    "label": "ER",
+    "description": "Tables, keys, and ownership.",
+    "width": 48,
+    "height": 24
+  },
+  {
+    "id": "c4",
+    "source": "c4.mmd",
+    "label": "C4",
+    "description": "People, systems, and their calls.",
+    "width": 48,
+    "height": 24
+  },
+  {
+    "id": "mindmap",
+    "source": "mindmap.mmd",
+    "label": "Mindmap",
+    "description": "Break a release into small tasks.",
+    "width": 60,
+    "height": 24
   },
   {
     "id": "history",
     "source": "history.json",
+    "label": "Git history",
+    "description": "Branches and merges in a release.",
     "width": 58,
     "height": 16,
-    "kind": "lanes",
-    "label": "Branches and merges",
-    "description": "Show how parallel work comes together."
+    "kind": "lanes"
+  },
+  {
+    "id": "bars",
+    "source": "regions.json",
+    "label": "Bars",
+    "description": "Compare request volumes by region.",
+    "width": 48,
+    "height": 16
+  },
+  {
+    "id": "trend",
+    "source": "signups.json",
+    "label": "Trend",
+    "description": "Weekly signups with braille detail.",
+    "width": 48,
+    "height": 16
+  },
+  {
+    "id": "pie",
+    "source": "pie.mmd",
+    "label": "Pie",
+    "description": "How an agent spends its time.",
+    "width": 60,
+    "height": 22
+  },
+  {
+    "id": "flows",
+    "source": "traffic.json",
+    "label": "Sankey",
+    "description": "Follow tasks to completed or blocked.",
+    "width": 40,
+    "height": 10
+  },
+  {
+    "id": "gantt",
+    "source": "gantt.mmd",
+    "label": "Gantt",
+    "description": "Schedule build, test, and delivery.",
+    "width": 60,
+    "height": 18
+  },
+  {
+    "id": "radar",
+    "source": "radar.mmd",
+    "label": "Radar",
+    "description": "Score hosted delivery on six criteria.",
+    "width": 60,
+    "height": 22
+  },
+  {
+    "id": "kanban",
+    "source": "kanban.mmd",
+    "label": "Kanban",
+    "description": "Track tasks by current status.",
+    "width": 60,
+    "height": 18
+  },
+  {
+    "id": "quadrant",
+    "source": "quadrant.mmd",
+    "label": "Quadrant",
+    "description": "Prioritize fixes by effort and impact.",
+    "width": 60,
+    "height": 22
   }
 ]

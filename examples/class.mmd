@@ -1,0 +1,9 @@
+classDiagram
+  class Task {
+    +id: string
+    +run()
+  }
+  class Result {
+    +ok: bool
+  }
+  Task --> Result : returns
