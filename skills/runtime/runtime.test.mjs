@@ -165,13 +165,16 @@ test('trends and bars start compact and hint a larger size only when the data ou
   assert.match(invalid.diagnostic.error, /--size must be compact, wide, tall, full/u);
 });
 
-test('chat pies label every slice in place: ASCII fills, no legend, and no anonymous slices', () => {
+test('chat pies label every slice in place: shade fills, no legend, and no anonymous slices', () => {
   const data = [['Chrome', 64], ['Safari', 19], ['Edge', 5], ['Firefox', 3], ['Other', 9]].map(([name, share]) => ({ name, share }));
   const pie = legend => JSON.stringify({ ...(legend === undefined ? {} : { legend }), marks: [{ type: 'arc', data, channels: { y: 'share', fill: 'name' } }] });
   // Mutation: drop the skill's `legend: false` default or its `shades` -> red.
   const chat = success(pie());
-  assert.doesNotMatch(chat.text, /[█░▚╱▌═▓▒]/u);
-  for (const glyph of ['#', '=', '+', ':', '.']) assert.ok(chat.text.includes(glyph), glyph);
+  assert.doesNotMatch(chat.text, /[▚╱▌═#=+]/u);
+  for (const glyph of ['█', '▓', '▒', '░', '·']) assert.ok(chat.text.includes(glyph), glyph);
+  const ascii = success(pie(), ['--charset', 'ascii']);
+  for (const glyph of ['#', '=', '+', ':', '.']) assert.ok(ascii.text.includes(glyph), glyph);
+  assert.match(ascii.text, /^[\x20-\x7e\n]+$/u);
   for (const [name] of data.map(row => [row.name])) assert.equal(chat.text.split(name).length - 1, 1, name);
   const legend = success(pie(true));
   assert.equal(legend.text.split('Chrome').length - 1, 2);
@@ -211,7 +214,8 @@ test('shared preprocessing preserves native JSON chart bytes', () => {
     line: '16fc24f0252434935b49d4938a0315f0550868c0e5380bb1957fb8a73b0211c5',
     area: '9242e3d9a9c0c9d8a0eae1025892133be679bbe94a78e6f2bf5d07c758c92f72',
     bar: 'b3fc7e2a1c81ee7ed8236ea6299b3568a9e37f2aef650bd93bd8b96b444300a3',
-    arc: 'b3417b7af276765a880fc71575522244f3d1b4408f62ead31ea72d8be1fa4706',
+    // Re-pinned when chat pies moved from ASCII to `█ ▓ ▒ ░ ·` shade fills.
+    arc: 'bd189d37a76389a8ce1baffa4d607567c6242bfd88ccfa16d77bd72a2cc1b5cd',
     cell: '1e751808bf1d20493d6ceb356523231d02296695c065fe406f716573047bf2ea',
   };
   for (const [type, hash] of Object.entries(hashes)) {
@@ -225,8 +229,9 @@ test('Mermaid pies share native legend, shades and anonymous-slice rejection, re
   const source = 'pie\n"Chrome": 64\n"Safari": 19\n"Edge": 5\n"Firefox": 3\n"Other": 9';
   for (const args of [[], ['--target', 'web'], ['--charset', 'ascii'], ['--charset', 'braille']]) {
     const output = success(source, args);
-    assert.doesNotMatch(output.text, /[█░▚╱▌═▓▒]/u);
-    for (const glyph of ['#', '=', '+', ':', '.']) assert.ok(output.text.includes(glyph), glyph);
+    const shades = args.includes('ascii') ? ['#', '=', '+', ':', '.'] : ['█', '▓', '▒', '░', '·'];
+    assert.doesNotMatch(output.text, /[▚╱▌═]/u);
+    for (const glyph of shades) assert.ok(output.text.includes(glyph), glyph);
     for (const name of ['Chrome', 'Safari', 'Edge', 'Firefox', 'Other']) assert.equal(output.text.split(name).length - 1, 1, name);
   }
   const configured = success(`%%{init: {"pie": {"showLegend": true}}}%%\npie showData\n"A": 6\n"B": 4`);
@@ -601,7 +606,7 @@ test('the merged source entrypoint dispatch Mermaid and retain JSON without an u
     const pie = await native.callbacks[0].render('pie\n Example', cli, budgetFor(), budgetFor);
     assert.equal(native.calls.at(-1).source, 'pie\n Example');
     assert.equal(native.calls.at(-1).options.legend, false);
-    assert.deepEqual(native.calls.at(-1).options.shades, ['#', '=', '+', ':', '.']);
+    assert.deepEqual(native.calls.at(-1).options.shades, ['█', '▓', '▒', '░', '·']);
     assert.strictEqual(pie.result.report, pie.result.build.report);
     assert.deepEqual(pie.result.report.ledger, [{ code: 'mermaid-degraded', message: 'Source adaptation.' }]);
   } finally { await rm(sourceDirectory, { recursive: true, force: true }); }

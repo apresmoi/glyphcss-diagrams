@@ -1,7 +1,7 @@
 <h1>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.png?v=82cda4a20a20">
-    <img alt="An agent terminal: a user asks for weekly signups, and the agent replies with a Glyphcss braille chart directly in the conversation." src="assets/hero-light.png?v=02a7bc9c2055" width="1200">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.png?v=11eaf34aa33a">
+    <img alt="An agent terminal: a user asks for weekly signups, and the agent replies with a Glyphcss braille chart directly in the conversation." src="assets/hero-light.png?v=d379b521d073" width="1200">
   </picture>
 </h1>
 
@@ -203,7 +203,7 @@ You can name `glyphcss-diagrams` explicitly for charts or diagrams. In Claude's 
 
 Diagrams wrap labels, adjust spacing, try the other orientation, and grow taller as needed. The renderer checks dimensions and graph coverage. Charts reject data loss; the agent can split crowded data into complete smaller charts. The skill never asks you to measure your window or mistake a tool subprocess's TTY for the chat viewport.
 
-Line and area charts select the braille charset by default. The renderer applies the same mark defaults to JSON and Mermaid: trends use braille; chat radar uses a braille outer contour/spokes and whole-cell `• ○ × +` series (recommended for one series; first series wins shared cells); pies use ASCII fills and no default legend, and fail if a slice loses its callout. Mermaid keeps its 72×24 budget. Other chat charts and diagrams select box characters. `--charset ascii` provides a strict ASCII option. Actual renderer output goes into the reply; file exports are optional when requested.
+Line and area charts select the braille charset by default. The renderer applies the same mark defaults to JSON and Mermaid: trends use braille; chat radar uses a braille outer contour/spokes and whole-cell `• ○ × +` series (recommended for one series; first series wins shared cells); pies use `█ ▓ ▒ ░ ·` shade fills and no default legend, and fail if a slice loses its callout. Mermaid keeps its 72×24 budget. Other chat charts and diagrams select box characters. `--charset ascii` provides a strict ASCII option. Actual renderer output goes into the reply; file exports are optional when requested.
 
 ## Built on Glyphcss
 

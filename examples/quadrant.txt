@@ -1,4 +1,5 @@
                          Next fixes
+
 High impact │         Do now        │         Plan
             │                       │
             │
@@ -8,15 +9,16 @@ High impact │         Do now        │         Plan
             │                       │         ●
             │                       │
             │
+            │                       │
             │── ── ── ── ── ── ── ──│── ── ── ── ── ── ── ──
+            │
             │          Later        │         Skip
-            │
             │                       │
-            │                       │     Rewrite
-            │          Theme                 ●
+            │                             Rewrite
+            │          Theme        │        ●
             │            ●          │
-            │                       │
             │
+            │                       │
             │                       │
  Low impact ────────────────────────────────────────────────
-        Low effort                               High effort
+            Low effort                           High effort
