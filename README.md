@@ -237,4 +237,4 @@ For a checkout nested inside the library repository, pass `--source ..`. `npm te
 
 ## License
 
-[MIT](LICENSE) · Copyright (c) 2026 apresmoi. The renderer code comes from [Glyphcss](https://github.com/apresmoi/glyphcss), also MIT. Bundled third-party [notices](skills/glyphcss-diagrams/scripts/NOTICE.txt) ship with the skill.
+[MIT](LICENSE)
