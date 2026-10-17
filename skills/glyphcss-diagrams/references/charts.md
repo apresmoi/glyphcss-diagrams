@@ -35,7 +35,7 @@ These chart kinds take Mermaid source only; pipe it to the same script. Every ex
 | Dated milestones | `timeline` · `title Product history` · `2024 : Beta : First customers` (one line per period, events after `:`) |
 | Work by status | `kanban` · `todo[To do]` · indented `a[Search filters]@{ assigned: 'Mia', priority: 'High' }` |
 | Effort vs impact | `quadrantChart` · `x-axis Low effort --> High effort` · `y-axis Low impact --> High impact` · `quadrant-1 Plan` … `quadrant-4 Delegate` · `SSO: [0.3, 0.8]` |
-| Options scored on criteria | `radar-beta` · `axis speed[Speed], cost[Cost], …` · `curve a[Vendor A]{4, 3, 5}` · `max 5` |
+| Options scored on criteria | `radar-beta` · `axis speed["Speed"], cost["Cost"], …` · `curve a["Vendor A"]{4, 3, 5}` · `max 5` |
 | Nested shares | `treemap-beta` · `"Product"` · indented `"Portal": 28` (indentation sets the level) |
 | Experience scored 1–5 | `journey` · `section Pay` · `Enter card: 2: Buyer, Payments` |
 | Binary header layout | `packet-beta` · `0-15: "Source port"` · `16-31: "Destination port"` (bit ranges, 32 per row) |

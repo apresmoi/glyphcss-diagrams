@@ -1,9 +1,5 @@
 erDiagram
-  USER ||--o{ TASK : owns
-  USER {
-    string id PK
-  }
-  TASK {
-    string id PK
-    string user_id FK
-  }
+  direction LR
+  CUSTOMER ||--o{ ORDER : places
+  ORDER ||--|{ LINE_ITEM : has
+  PRODUCT ||--o{ LINE_ITEM : in

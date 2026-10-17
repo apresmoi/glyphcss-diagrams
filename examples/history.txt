@@ -1,6 +1,17 @@
-            *   (v1.0)  Ship charts + diagrams
-            ├─╮
-            │ * (skills)  Add text renderers
-            * │ (main)  Refine the API
-            ├─╯
-            *   Start with glyphcss
+  *         Fork polycss
+  *         ASCII rasteriser
+  ├─┬─────╮
+  │ *     │ Cell canvas
+  │ ├─┬─╮ │
+  │ │ * │ │ Bars and lines
+  │ │ * │ │ Braille trends  (charts)
+  │ │ │ * │ Graph layout  (diagrams)
+  │ ├─╯ │ │
+  │ *   │ │ Charts  (merge)
+  │ │   │ * Font fallback  (hotfix)
+  ├─┼───┼─╯
+  * │   │   Fix fonts  (merge, tag: v0.2.1)
+  │ ├───╯
+  │ *       Diagrams  (develop, merge)
+  ├─╯
+  *         Charts + diagrams  (main, merge, tag: v0.3.0)

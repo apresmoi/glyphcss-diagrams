@@ -1,0 +1,26 @@
+gitGraph
+  commit id: "Fork polycss"
+  commit id: "ASCII rasteriser"
+  branch develop
+  checkout develop
+  commit id: "Cell canvas"
+  branch charts
+  checkout charts
+  commit id: "Bars and lines"
+  commit id: "Braille trends"
+  checkout develop
+  branch diagrams
+  checkout diagrams
+  commit id: "Graph layout"
+  checkout develop
+  merge charts id: "Charts"
+  checkout main
+  branch hotfix
+  checkout hotfix
+  commit id: "Font fallback"
+  checkout main
+  merge hotfix id: "Fix fonts" tag: "v0.2.1"
+  checkout develop
+  merge diagrams id: "Diagrams"
+  checkout main
+  merge develop id: "Charts + diagrams" tag: "v0.3.0"

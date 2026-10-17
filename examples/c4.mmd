@@ -1,6 +1,8 @@
 C4Context
-  Person(user, "User")
-  System(agent, "Agent")
-  System_Ext(repo, "Repository")
-  Rel(user, agent, "Requests")
-  Rel(agent, repo, "Reads")
+  Person(user, "Customer")
+  System(shop, "Web shop")
+  System_Ext(pay, "Payments")
+  System_Ext(mail, "Email")
+  Rel(user, shop, "Orders")
+  Rel(shop, pay, "Charges")
+  Rel(shop, mail, "Sends")
