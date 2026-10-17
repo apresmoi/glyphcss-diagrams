@@ -1,45 +1,42 @@
 ---
 name: glyphcss-diagrams
-description: Use whenever a reply needs a diagram — a flow, pipeline, architecture, command tree, decision branches, dependencies, a message sequence between services, a state machine or lifecycle, or anything that forks and rejoins over time (a branch and merge history, parallel workstreams, a branching story, revision or experiment lineage), a class model or data schema, a C4 or system context view, a mind map, or requirements traced to tests — instead of hand-drawing box or arrow characters. Write Mermaid or graph JSON; the renderer returns aligned text sized for chat or a terminal. Triggers on "diagram", "draw", "show me how it flows", "how does X branch", "architecture", "pipeline", "sequence", "state machine", "lifecycle", "who calls what", "class diagram", "data model", "schema", "ER", "entities", "C4", "context diagram", "mind map", "brainstorm", "git graph", "requirements".
+description: Use whenever a reply needs a diagram or chart instead of hand-drawn boxes/arrows/bars or a markdown table: flows, pipeline, architecture, command tree, decisions, dependencies, message sequence (who calls what), state machine/lifecycle, forks and rejoins (branch/merge histories, parallel workstreams, branching stories, revision/experiment lineage), class diagrams, data model/schema/ER/entities, C4/context diagram, mind map/brainstorm, requirements traced to tests; or compare, trend, distribution, breakdown, scatter, histograms, heatmaps, funnels, Sankey flows, shares of a whole, schedule/roadmap, task boards/kanban, prioritisation/2x2 matrices, multi-criteria scores/radar, budget hierarchies/treemaps, user journeys, bit/byte/packet/header layouts. Triggers include "diagram", "draw", "show me how it flows", "how does X branch", "graph the", "plot", "over time", "how much of", "gantt", "timeline", "prioritise", "score", "git graph". Write Mermaid or JSON; get aligned text sized for chat or terminal.
 ---
 
 # Glyphcss diagrams
 
-By default, author Mermaid or graph JSON, run the bundled renderer, and put its actual text output directly in your reply. Use a fenced `text` block where chat needs it to preserve alignment; terminal output is plain text. Create a file or another format only when the user explicitly requests it. Node.js 22+ is required; the renderer is self-contained. Resolve `<skill-dir>` to the directory containing this file; execution does not depend on the current directory.
-
-## Choose and render
-
-- Use a flowchart for dependencies or decisions, a sequence for ordered exchanges, a state diagram for the states one thing moves between, and lanes for a main line that forks and rejoins over time: git histories, plans whose workstreams split and converge, branching stories, revision or experiment lineage. Use a top-down flowchart for family trees and other graphs where most nodes join several lines. For structure, reach for the matching Mermaid type: `classDiagram` for types, members and inheritance/composition; `erDiagram` for tables, keys and cardinalities; `C4Context`/`C4Container` for people, systems and what they call; `architecture-beta` for deployed services grouped by host or cloud; `mindmap` for a topic broken into ideas; `requirementDiagram` for requirements and what verifies them; `gitGraph` for an actual commit and branch history. Use short meaningful labels; label decision branches. Preserve the user's nodes, connections, and direction unless automatic orientation is appropriate.
-- Keep a graph to about nine nodes. When several sources feed one hub, write them as one list node (`S[Star sources<br>Bar: Galaxia<br>Arms: Reid 2019] --> stars`) instead of a box each; box the hubs. A bigger picture becomes an overview plus detail diagrams.
-- Start with Mermaid `flowchart`/`graph`. Other Mermaid headers dispatch automatically, including sequences, states, Git histories and charts. For JSON authoring, sequence details, or lanes, read [the source reference](references/source.md).
+Author Mermaid or JSON; run the self-contained Node.js 22+ renderer and paste stdout verbatim. Resolve `<skill-dir>` to this file's directory; any working directory works.
 
 ```sh
-node "<skill-dir>/scripts/render.mjs" - <<'MERMAID'
+node "<skill-dir>/scripts/render.mjs" - <<'SOURCE'
 flowchart LR
-  request[Request] --> agent[Agent]
-  agent --> answer[Answer]
-MERMAID
+  request[Request] --> agent[Agent] --> answer[Answer]
+SOURCE
 ```
 
-## Mermaid input
+## Choose a family
 
-Both render scripts accept Mermaid directly and choose the public renderer from its declaration. Supported diagrams: flowchart/graph/flowchart-elk, stateDiagram (including v2, notes and concurrent regions), sequenceDiagram, classDiagram (including v2), erDiagram, mindmap, gitGraph, block, architecture, requirementDiagram and C4Context/Container/Component/Dynamic/Deployment. Supported charts: pie, xychart, sankey, quadrantChart, gantt, radar, treemap, journey, timeline, packet and kanban (including documented beta headers). Existing JSON input stays supported.
+- Dependencies/decisions → flowchart; ordered exchanges → sequence; states of one thing → state diagram.
+- Forks/rejoins in histories, plans, stories or lineage → lanes; actual commits → gitGraph; family trees → top-down flowchart.
+- Types/members → classDiagram; tables/keys → erDiagram; people/systems → C4; deployed services → architecture; ideas → mindmap; requirements/tests → requirementDiagram; blocks → block.
+- Categories → bars; trends → lines/areas; relationships → dots; matrices → cells; proportions → arcs; flows → Sankey; attrition → funnel. Use a table when exact values matter more than shape.
+- Dates/dependencies → gantt; dated milestones → timeline; work by status → kanban; judged axes → quadrantChart; criteria → radar; nested shares → treemap; experience → journey; binary fields → packet. Mermaid only.
 
-Mermaid defaults to 72 columns, box for chat and braille for `--target web`; `--charset` overrides it. Mermaid charts use the library's target look and source ledger, rather than the JSON chart conveniences in the charts skill. Source configuration, callbacks and URLs stay inert. `--kind`/`--order` do not override Mermaid declarations; `--size` in the charts script sets a cell budget, including for Mermaid diagrams. Inapplicable supplied options produce `mermaid-option-ignored`. Ordinary degradation notes remain visible on stderr; impossible budgets still fail rather than silently losing content.
+Read [charts.md](references/charts.md) for JSON charts, per-type rules, sizes, transforms, axes and Mermaid chart syntax. Read [diagrams.md](references/diagrams.md) for JSON graphs/sequences/lanes, Mermaid and layout hints. JSON number arrays, marks, mark arrays or `{marks}` select charts; `nodes`/`edges` select graphs. Mixed graph/chart fields are rejected; author one valid spec. Sequences/lanes need `--kind sequence|lanes`; lanes support `--order oldest-first|newest-first`. Mermaid headers always win over kind/order.
 
-## Fit the destination automatically
+## Target and fit
 
-- Replying in chat: use the default 72 columns × 24 rows, monochrome box characters. Do not use a tool subprocess's terminal size as the chat width. Never ask the user for window dimensions.
-- When the host provides a text-cell budget or the user requests one, pass `--width N --height N`. These are character cells, not pixels; the default is a budget, not a measured window.
-- Only for output directly to a real terminal, use `--target terminal`; it reads stdout's dimensions, otherwise falls back to 80×24. Use `--charset ascii` for strictly ASCII output.
-- Graphs automatically try label wrapping, spacing, perpendicular orientation and wrapping a long path into rows, keeping the width and growing taller when needed; a graph is never split into panels. Sequences and lanes also grow taller instead of splitting. Never manually wrap or clip the rendered lines.
+- Default chat: monochrome 72×24 cells; JSON line/area/bar charts start compact. Never use a tool PTY as the chat viewport or ask for window dimensions.
+- Pass a supplied budget with `--width N --height N` (cells, not pixels). Diagrams keep width and may grow taller. `--target terminal` reads stdout's actual TTY minus margins, otherwise 80×24; `--target web` defaults to braille.
+- `--charset ascii|box|blocks|braille` overrides defaults. Trends use braille; other chat output uses box. See charts.md for pie/radar/heatmap defaults.
+- `--size compact|wide|tall|full` sets 48×16, 72×16, 48×24 or 72×24; explicit dimensions win per axis. Choose JSON chart size from data; if stderr names a larger size, rerun once with it. Mermaid keeps 72×24 unless sized explicitly.
+- For `GLYPH_SKILL_UNFIT` diagrams: remove groups/boundaries; then split into overview and 6–8-node details, repeating join nodes; for C4/requirements try a flowchart with the same labelled edges. Shorter labels/flipped direction rarely help.
+- For unfit charts: split Sankeys into stage ranges of ≤3 columns with shared nodes repeated; choose a representation supporting every value or split into complete smaller charts. State any split. Preserve values, units, order, series, nodes and connections; never silently aggregate, omit, clip or widen beyond the destination. Disclose a hand-drawn fallback and why.
 
-## Check and deliver
+## Deliver
 
-- Stdout is the rendered text; stderr is a JSON diagnostic report. `--json` returns pages, measured dimensions, budget, metadata, and report. A nonzero exit means no usable output.
-- Check every authored node and connection is represented and labels remain readable; inspect the text as well as diagnostics. If it fails with `GLYPH_SKILL_UNFIT`, recover in this order: (1) remove subgraphs, C4 boundaries and other groups; (2) split into an overview plus detail diagrams of about 6–8 nodes each, repeating the nodes where they join; (3) for a requirement or C4 diagram, a `flowchart` with the same nodes and labelled edges. Shortening labels or flipping direction rarely helps. State any split. Do not silently remove content or enlarge the width beyond the destination budget. If you give up on the renderer and draw by hand, say so and why.
-- Paste the successful output verbatim, preserving internal spaces. Briefly explain orientation changes, pagination, or reduced labels. Unless explicitly requested, do not substitute Mermaid, commands, screenshots, or file links for the diagram. An explicit text-file export can redirect stdout to the requested path.
+Stdout is rendered text; stderr is JSON diagnostics. `--json` inspects text/pages, dimensions, budget, metadata and report. Nonzero exit means no usable output. Check labels, axes, units, values and connections; fix source and rerun. Disclose omitted labels/legends, abbreviations, orientation changes or pagination. Paste successful stdout in a fenced `text` block (plain text in terminals), preserving internal spaces and every row/column. Never edit glyphs or substitute source, commands, screenshots or links. Files/other formats only on explicit request; redirect stdout for text exports.
 
 ## Report a problem
 
-If the renderer keeps failing on a reasonable input, or its output is wrong (missing labels, crossings, false boxes, chopped words), offer the user to report it. Draft the issue as described in [the issue reference](references/issues.md), show it to the user, and file it only with their explicit approval.
+For persistent reasonable failures or wrong output, offer an issue report using [issues.md](references/issues.md). Recover first; show the draft and file only with explicit approval.

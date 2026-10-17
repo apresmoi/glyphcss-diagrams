@@ -4,7 +4,8 @@ import { homedir } from 'node:os';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const SKILLS = ['glyphcss-charts', 'glyphcss-diagrams'];
+export const SKILLS = ['glyphcss-diagrams'];
+const LEGACY_SKILL = 'glyphcss-charts';
 export const ROOT = fileURLToPath(new URL('../', import.meta.url));
 const RECEIPT = '.glyphcss-install.json';
 const OWNER = 'https://github.com/apresmoi/glyphcss-diagrams';
@@ -67,10 +68,12 @@ function isInside(parent, child) {
 export function manage(action, { destination, copy = false, root = ROOT }) {
   const sourceRoot = realpathSync(root);
   const dest = existsSync(destination) ? realpathSync(destination) : resolve(destination);
-  // Inspect both targets before creating or removing either skill.
-  const plan = SKILLS.map(skill => {
-    const source = realpathSync(join(sourceRoot, 'skills', skill));
-    if (!existsSync(join(source, 'SKILL.md')) || !existsSync(join(source, 'scripts', 'render.mjs'))) {
+  // Inspect the current and retired targets before any mutation. The retired
+  // source may no longer exist, so verify links lexically and copies by receipt.
+  const plan = [...SKILLS, LEGACY_SKILL].map(skill => {
+    const legacy = skill === LEGACY_SKILL;
+    const source = legacy ? join(sourceRoot, 'skills', skill) : realpathSync(join(sourceRoot, 'skills', skill));
+    if (!legacy && (!existsSync(join(source, 'SKILL.md')) || !existsSync(join(source, 'scripts', 'render.mjs')))) {
       throw new Error(`Incomplete source skill: ${source}`);
     }
     if (isInside(source, dest)) throw new Error('The destination cannot be inside a source skill.');
@@ -83,15 +86,17 @@ export function manage(action, { destination, copy = false, root = ROOT }) {
     if (existing) {
       if (!existing.isDirectory()) throw new Error(`Refusing unrelated file: ${target}`);
       const receipt = copyReceipt(target, skill);
-      if (action === 'install' && !sameFiles(snapshot(source), receipt.files)) {
+      if (action === 'install' && !legacy && !sameFiles(snapshot(source), receipt.files)) {
         throw new Error(`Installed copy differs from this checkout: ${target}. Uninstall the unchanged copy, then install again.`);
       }
       return { skill, source, target, mode: 'copy', exists: true };
     }
-    return { skill, source, target, mode: copy ? 'copy' : 'link', exists: false, files: action === 'install' && copy ? snapshot(source) : undefined };
+    return { skill, source, target, mode: copy ? 'copy' : 'link', exists: false, files: action === 'install' && copy && !legacy ? snapshot(source) : undefined };
   });
 
   if (action === 'install') {
+    const retired = plan.find(item => item.skill === LEGACY_SKILL && item.exists);
+    if (retired) throw new Error(`Retired glyphcss-charts remains at ${retired.target}. Run node uninstall.mjs --dest ${JSON.stringify(dest)} first, then install glyphcss-diagrams again.`);
     const requestedMode = copy ? 'copy' : 'link';
     const mismatch = plan.find(item => item.exists && item.mode !== requestedMode);
     if (mismatch) throw new Error(`Existing installation uses ${mismatch.mode} mode: ${mismatch.target}. Requested ${requestedMode} mode. Uninstall first, then install again in the requested mode.`);
@@ -102,9 +107,10 @@ export function manage(action, { destination, copy = false, root = ROOT }) {
       if (item.mode === 'link') unlinkSync(item.target);
       else rmSync(item.target, { recursive: true });
     }
-    return plan.map(item => `${item.exists ? 'Removed' : 'Absent'} ${item.target}`);
+    return plan.filter(item => SKILLS.includes(item.skill) || item.exists).map(item => `${item.exists ? 'Removed' : 'Absent'} ${item.target}`);
   }
 
+  plan.pop(); // The absent retired skill is never installed.
   const created = [];
   try {
     if (plan.some(item => !item.exists)) mkdirSync(dest, { recursive: true });
@@ -140,7 +146,7 @@ export function run(action) {
     const args = process.argv.slice(2);
     const roots = destinations();
     if (args.includes('--help') || args.includes('-h')) {
-      process.stdout.write(`Usage: node ${action}.mjs (--provider NAME | --dest DIRECTORY)${action === 'install' ? ' [--copy]' : ''}\n\nBoth skills are ${action === 'install' ? 'installed as directory symlinks by default' : 'removed only when ownership can be verified'}.\nProviders: ${Object.keys(roots).join(', ')}\n--dest selects a skills directory directly, including project-local directories.\n${action === 'install' ? '--copy creates independent folders (use when directory symlinks are unavailable).\n' : ''}Existing unrelated or modified files are never replaced or removed.\n`);
+      process.stdout.write(`Usage: node ${action}.mjs (--provider NAME | --dest DIRECTORY)${action === 'install' ? ' [--copy]' : ''}\n\nThe skill is ${action === 'install' ? 'installed as a directory symlink by default' : 'removed only when ownership can be verified; owned retired glyphcss-charts installs are also removed'}.\nProviders: ${Object.keys(roots).join(', ')}\n--dest selects a skills directory directly, including project-local directories.\n${action === 'install' ? '--copy creates independent folders (use when directory symlinks are unavailable).\n' : ''}Existing unrelated or modified files are never replaced or removed.\n`);
       return;
     }
     let destination, copy = false;

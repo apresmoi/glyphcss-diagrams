@@ -1,6 +1,6 @@
 # Diagram sources
 
-Pass a file path or `-` for stdin. Mermaid kind is detected; for JSON choose `--kind graph` (default), `--kind sequence`, or `--kind lanes`.
+Pass a file path or `-` for stdin. Mermaid kind is detected. JSON with `nodes` or `edges` selects graph automatically (both arrays are required by the graph schema); use `--kind sequence` or `--kind lanes` for other JSON diagrams. Explicit `--kind graph` is also supported. Mixed graph/chart fields are rejected; remove the conflicting fields.
 
 ## State diagrams
 
@@ -53,7 +53,7 @@ JSON with `--kind sequence`:
 }
 ```
 
-Participant order controls columns; message order controls time. Optional `frames` use `{kind,label?,from,to}` with message indices; `notes` use `{text,over:[participant ids],at:messageIndex}`. Narrow output abbreviates labels and then paginates time; disclose abbreviations.
+Participant order controls columns; message order controls time. Optional `frames` use `{kind,label?,from,to}` with message indices; `notes` use `{text,over:[participant ids],at:messageIndex}`. Narrow output may abbreviate labels; disclose abbreviations. The skill grows sequences taller instead of paginating time.
 
 ## Lanes
 
@@ -62,3 +62,37 @@ Use `--kind lanes` for JSON or a `git log --date-order -n 30 --pretty=format:'%h
 JSON is `{"nodes":[{"id":"new","label":"Release","parents":["old"],"marks":["main"]},{"id":"old","label":"Start","parents":[]}]}`. Nodes are newest first; every parent must appear later in the array. Parents express topology; `marks` are optional tags. Add `"truncated": true` when the nodes are a window of a longer history and some parents are outside it.
 
 Git histories read newest first. For a plan, story, or lineage that reads forward in time, still author newest first and pass `--order oldest-first` to draw the oldest node at the top. Tight layouts may share an overflow lane or shorten labels; retain every node row and disclose the diagnostic.
+
+## Authoring and rendering details
+
+- Use a flowchart for dependencies or decisions, a sequence for ordered exchanges, a state diagram for the states one thing moves between, and lanes for a main line that forks and rejoins over time: git histories, plans whose workstreams split and converge, branching stories, revision or experiment lineage. Use a top-down flowchart for family trees and other graphs where most nodes join several lines. For structure, reach for the matching Mermaid type: `classDiagram` for types, members and inheritance/composition; `erDiagram` for tables, keys and cardinalities; `C4Context`/`C4Container` for people, systems and what they call; `architecture-beta` for deployed services grouped by host or cloud; `mindmap` for a topic broken into ideas; `requirementDiagram` for requirements and what verifies them; `gitGraph` for an actual commit and branch history. Use short meaningful labels; label decision branches. Preserve the user's nodes, connections, and direction unless automatic orientation is appropriate.
+- Keep a graph to about nine nodes. When several sources feed one hub, write them as one list node (`S[Star sources<br>Bar: Galaxia<br>Arms: Reid 2019] --> stars`) instead of a box each; box the hubs. A bigger picture becomes an overview plus detail diagrams.
+- Start with Mermaid `flowchart`/`graph`. Other Mermaid headers dispatch automatically, including sequences, states, Git histories and charts. For JSON authoring, sequence details, or lanes, read [the source reference](diagrams.md).
+
+```sh
+node "<skill-dir>/scripts/render.mjs" - <<'MERMAID'
+flowchart LR
+  request[Request] --> agent[Agent]
+  agent --> answer[Answer]
+MERMAID
+```
+
+## Mermaid input
+
+The renderer accepts Mermaid directly and chooses the public renderer from its declaration. Supported diagrams: flowchart/graph/flowchart-elk, stateDiagram (including v2, notes and concurrent regions), sequenceDiagram, classDiagram (including v2), erDiagram, mindmap, gitGraph, block, architecture, requirementDiagram and C4Context/Container/Component/Dynamic/Deployment. Supported charts: pie, xychart, sankey, quadrantChart, gantt, radar, treemap, journey, timeline, packet and kanban (including documented beta headers). Existing JSON input stays supported.
+
+Mermaid defaults to 72 columns, box for chat and braille for `--target web`; `--charset` overrides it. Mermaid charts use the same preprocessing as JSON charts and retain the source ledger; see [charts](charts.md). Source configuration, callbacks and URLs stay inert. `--kind`/`--order` do not override Mermaid declarations; `--size` sets a cell budget, including for Mermaid diagrams. Inapplicable supplied options produce `mermaid-option-ignored`. Ordinary degradation notes remain visible on stderr; impossible budgets still fail rather than silently losing content.
+
+## Fit the destination automatically
+
+- Replying in chat: use the default 72 columns × 24 rows, monochrome box characters. Do not use a tool subprocess's terminal size as the chat width. Never ask the user for window dimensions.
+- When the host provides a text-cell budget or the user requests one, pass `--width N --height N`. These are character cells, not pixels; the default is a budget, not a measured window.
+- Only for output directly to a real terminal, use `--target terminal`; it reads stdout's dimensions, otherwise falls back to 80×24. Use `--charset ascii` for strictly ASCII output.
+- Graphs automatically try label wrapping, spacing, perpendicular orientation and wrapping a long path into rows, keeping the width and growing taller when needed; a graph is never split into panels. Sequences and lanes also grow taller instead of splitting. Never manually wrap or clip the rendered lines.
+
+## Check and deliver
+
+- Stdout is the rendered text; stderr is a JSON diagnostic report. `--json` returns pages, measured dimensions, budget, metadata, and report. A nonzero exit means no usable output.
+- Check every authored node and connection is represented and labels remain readable; inspect the text as well as diagnostics. If it fails with `GLYPH_SKILL_UNFIT`, recover in this order: (1) remove subgraphs, C4 boundaries and other groups; (2) split into an overview plus detail diagrams of about 6–8 nodes each, repeating the nodes where they join; (3) for a requirement or C4 diagram, a `flowchart` with the same nodes and labelled edges. Shortening labels or flipping direction rarely helps. State any split. Do not silently remove content or enlarge the width beyond the destination budget. If you give up on the renderer and draw by hand, say so and why.
+- Paste the successful output verbatim, preserving internal spaces. Briefly explain orientation changes, pagination, or reduced labels. Unless explicitly requested, do not substitute Mermaid, commands, screenshots, or file links for the diagram. An explicit text-file export can redirect stdout to the requested path.
+

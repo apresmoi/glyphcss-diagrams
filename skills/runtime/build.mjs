@@ -70,13 +70,13 @@ async function notices(metafile) {
   return entries.join('\n\n--------------------\n\n');
 }
 
-// Both entrypoints import the shared Mermaid dispatcher and public readers.
-for (const name of ['charts', 'diagrams']) {
-  const outdir = join(skillRoot, `skills/glyphcss-${name}/scripts`);
+// One portable entrypoint covers charts and diagrams.
+{
+  const outdir = join(skillRoot, 'skills/glyphcss-diagrams/scripts');
   await mkdir(outdir, { recursive: true });
   const outfile = join(outdir, 'render.mjs');
   const result = await build({
-    absWorkingDir: skillRoot, entryPoints: [`skills/runtime/${name}.mjs`], outfile,
+    absWorkingDir: skillRoot, entryPoints: ['skills/runtime/render.mjs'], outfile,
     alias: Object.fromEntries(Object.entries(aliases).map(([key, path]) => [key, join(upstream, path)])),
     bundle: true, platform: 'node', format: 'esm', target: 'node22',
     minify: true, legalComments: 'eof', metafile: true,
@@ -84,5 +84,5 @@ for (const name of ['charts', 'diagrams']) {
   });
   await writeFile(join(outdir, 'NOTICE.txt'), await notices(result.metafile));
   await chmod(outfile, 0o755);
-  process.stdout.write(`Built glyphcss-${name}: ${result.metafile.outputs[Object.keys(result.metafile.outputs)[0]].bytes} bytes\n`);
+  process.stdout.write(`Built glyphcss-diagrams: ${result.metafile.outputs[Object.keys(result.metafile.outputs)[0]].bytes} bytes\n`);
 }

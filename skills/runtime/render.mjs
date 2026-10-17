@@ -1,7 +1,10 @@
 import { renderGlyphChart, glyphChartRepairHint, normalizeGlyphChartInput, glyphChartFromMermaid, renderGlyphChartMermaid } from '@glyphcss/charts';
-import { renderGlyphDiagram } from '@glyphcss/diagrams';
-import { renderGlyphSequence } from '@glyphcss/diagrams/sequence';
+import { renderGlyphDiagram, glyphDiagramRepairHint } from '@glyphcss/diagrams';
+import { renderGlyphSequence, glyphSequenceRepairHint } from '@glyphcss/diagrams/sequence';
+import { renderGlyphLaneDag, glyphLaneDagRepairHint } from '@glyphcss/diagrams/lanes';
 import { CHART_SIZES, createGlyphMermaidRenderer, parseJson, runCli } from './common.mjs';
+
+let activeKind = 'chart';
 
 const isTrend = mark => mark?.type === 'line' || mark?.type === 'area';
 const isBar = mark => mark?.type === 'bar';
@@ -91,6 +94,7 @@ async function renderMermaid(text, cli, options) {
       charset = rendered.charset;
       return rendered.result;
     },
+    onKind: kind => { activeKind = kind; },
     graph: renderGlyphDiagram,
     sequence: renderGlyphSequence,
   });
@@ -99,13 +103,30 @@ async function renderMermaid(text, cli, options) {
 
 await runCli({
   kind: 'chart',
-  repairHint: glyphChartRepairHint,
-  render: (text, cli, _options, budgetFor) => {
-    if (!/^\s*(?:[\[{"\d]|-(?:\d|\.)|(?:true|false|null)\s*$)/u.test(text)) return renderMermaid(text, cli, _options);
-    const spec = normalizeGlyphChartInput(parseJson(text));
+  getKind: () => activeKind,
+  repairHint: code => ({ chart: glyphChartRepairHint, graph: glyphDiagramRepairHint, sequence: glyphSequenceRepairHint, lanes: glyphLaneDagRepairHint })[activeKind](code),
+  render: async (text, cli, _options, budgetFor) => {
+    const isGitLog = cli.kind === 'lanes' && /^\s*[a-f0-9]+\|(?:[a-f0-9]+(?: [a-f0-9]+)*)?\|[^|\n]*\|/iu.test(text);
+    const isJson = !isGitLog && /^\s*(?:[\[{"\d]|-(?:\d|\.)|(?:true|false|null)\s*$)/u.test(text);
+    if (!isJson && cli.kind !== 'lanes') return renderMermaid(text, cli, _options);
+    const input = isJson ? parseJson(text) : text;
+    const graphShape = input && !Array.isArray(input) && typeof input === 'object'
+      && (Object.hasOwn(input, 'nodes') || Object.hasOwn(input, 'edges'));
+    const chartShape = input && (Object.hasOwn(input, 'marks') || Object.hasOwn(input, 'type'));
+    if (!cli.kind && graphShape && chartShape) {
+      throw Object.assign(new Error('JSON mixes graph nodes/edges and chart marks/type. Remove chart fields for a graph, or graph fields for a chart; --kind selects a diagram parser but its schema still applies.'), { code: 'GLYPH_SKILL_AMBIGUOUS_JSON' });
+    }
+    activeKind = cli.kind ?? (graphShape ? 'graph' : 'chart');
+    if (activeKind !== 'chart') {
+      // --kind lanes accepts git log text, but Mermaid declarations still win.
+      if (!isJson && !isGitLog) return renderMermaid(text, cli, _options);
+      const render = { graph: renderGlyphDiagram, sequence: renderGlyphSequence, lanes: renderGlyphLaneDag }[activeKind];
+      return { kind: activeKind, result: await render(input, { ..._options, autoDirection: true, detail: 'faithful', overflow: 'expand', ...(cli.order ? { order: cli.order } : {}) }) };
+    }
+    const spec = normalizeGlyphChartInput(input);
     const trends = spec.marks.filter(isTrend);
     const bars = spec.marks.filter(isBar);
     const options = budgetFor(trends.length || bars.length ? 'compact' : undefined);
-    return { ...renderChart(spec, cli, options), hint: sizeHint(trends, bars, options) };
+    return { kind: 'chart', ...renderChart(spec, cli, options), hint: sizeHint(trends, bars, options) };
   },
 });

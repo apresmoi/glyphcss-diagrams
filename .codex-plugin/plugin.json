@@ -21,7 +21,7 @@
   "interface": {
     "displayName": "Glyphcss diagrams & charts",
     "shortDescription": "Text charts and diagrams in your chat",
-    "longDescription": "Render charts, flowcharts, sequences, and branching histories as readable text directly in chat or a terminal. Two focused skills share self-contained Node.js renderers from the open-source Glyphcss libraries. Automatic text budgets keep output compact; render reports catch data or connection loss.",
+    "longDescription": "Render charts, flowcharts, sequences, and branching histories as readable text directly in chat or a terminal. One skill bundles a self-contained Node.js renderer from the open-source Glyphcss libraries. Automatic text budgets keep output compact; render reports catch data or connection loss.",
     "developerName": "apresmoi",
     "category": "Productivity",
     "capabilities": [

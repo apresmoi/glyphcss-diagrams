@@ -7,9 +7,10 @@ export const CHART_SIZES = { compact: [48, 16], wide: [72, 16], tall: [48, 24], 
 
 // Dependencies are injected so the shared dispatch contract can be tested
 // against public renderer exports without regenerating portable bundles.
-export function createGlyphMermaidRenderer({ chart, graph, sequence }) {
+export function createGlyphMermaidRenderer({ chart, graph, sequence, onKind = () => {} }) {
   return async (source, cli, options) => {
     try {
+      onKind('chart');
       const result = chart(source, options);
       if (cli.kind || cli.order) result.report.ledger.push({ code: 'mermaid-option-ignored', message: '--kind/--order are diagram JSON/lane options; Mermaid charts select their own renderer.' });
       return { kind: 'chart', result };
@@ -21,6 +22,7 @@ export function createGlyphMermaidRenderer({ chart, graph, sequence }) {
       .replace(/^(?:\s|%%\{[\s\S]*?\}%%|%%[^\n]*(?:\n|$))*/u, '');
     const header = body.match(/^[\w-]+/u)?.[0];
     const kind = header === 'sequenceDiagram' ? 'sequence' : header?.toLowerCase() === 'gitgraph' ? 'lanes' : 'graph';
+    onKind(kind);
     const result = await (kind === 'sequence' ? sequence : graph)(kind === 'sequence' ? body : source, { ...options, autoDirection: true, detail: 'faithful', overflow: 'expand' });
     if (kind === 'sequence' && body !== source) result.report.ledger.push({ code: 'mermaid-degraded', message: 'Sequence preamble metadata and initialization are inert; the native sequence title applies.' });
     if (cli.kind || cli.order) result.report.ledger.push({ code: 'mermaid-option-ignored', message: '--kind/--order do not override Mermaid declarations; source ordering and native layout apply.' });
@@ -28,7 +30,7 @@ export function createGlyphMermaidRenderer({ chart, graph, sequence }) {
   };
 }
 
-export function parseCli(args, diagrams = false) {
+export function parseCli(args) {
   const { values, positionals } = parseArgs({
     args,
     allowPositionals: true,
@@ -36,7 +38,7 @@ export function parseCli(args, diagrams = false) {
       width: { type: 'string' }, height: { type: 'string' },
       target: { type: 'string', default: 'chat' }, charset: { type: 'string' },
       json: { type: 'boolean', default: false }, help: { type: 'boolean', short: 'h' },
-      ...(diagrams ? { kind: { type: 'string' }, order: { type: 'string' } } : { size: { type: 'string' } }),
+      kind: { type: 'string' }, order: { type: 'string' }, size: { type: 'string' },
     },
   });
   if (positionals.length > 1) throw new Error('Pass one input file, or - for stdin.');
@@ -164,17 +166,34 @@ export function prepareResult(kind, result, budget) {
 // rescues them; shortening labels or flipping direction rarely does.
 function unfitHint(diagrams) {
   const steps = diagrams
-    ? 'Remove subgraphs, boundaries and other groups first. If it still fails, split into an overview plus detail diagrams of about 6-8 nodes each, repeating the nodes where they join, and tell the user.'
+    ? 'Remove subgraphs, boundaries and other groups first. If it still fails, split into an overview plus detail diagrams of about 6-8 nodes each, repeating the nodes where they join, and tell the user. For C4 or requirements, try a flowchart with the same nodes and labelled edges.'
     : 'Split a Sankey into stage ranges of at most three columns, repeating the shared nodes; for other charts choose a representation that supports every input value or split into complete smaller charts. Tell the user about the split.';
   return `${steps} Do not silently omit or combine data, labels, or connections. If a reasonable input keeps failing, offer the user an issue report (references/issues.md).`;
 }
 
-export async function runCli({ kind, render, repairHint, diagrams = false }) {
+export async function runCli({ kind, render, repairHint, getKind }) {
   let budget, result;
   try {
-    const options = parseCli(process.argv.slice(2), diagrams);
+    const options = parseCli(process.argv.slice(2));
     if (options.help) {
-      process.stdout.write(`Usage: node render.mjs [input-file|-] [--width N] [--height N]\n  [--target chat|terminal|web] [--charset ascii|box|blocks|braille] [--json]${diagrams ? '\n  [--kind graph|sequence|lanes] [--order newest-first|oldest-first]' : '\n  [--size compact|wide|tall|full]'}\n\nInput: ${diagrams ? 'Any supported Mermaid source, or diagram JSON.' : 'Any supported Mermaid source, or chart JSON: a plot, mark, mark array, or number array.'}\nDefault: monochrome chat, 72 columns x 24 rows per page${diagrams ? '' : '; line and area charts start compact (48 x 16)'}.\nTerminal: output TTY minus margins, otherwise 80 x 24.\nText goes to stdout; budget and diagnostics go to stderr. --json includes all pages.\n`);
+      process.stdout.write(`Usage: node render.mjs [input-file|-] [--width N] [--height N]
+  [--target chat|terminal|web] [--charset ascii|box|blocks|braille] [--json]
+  [--size compact|wide|tall|full] [--kind graph|sequence|lanes]
+  [--order newest-first|oldest-first] [--help|-h]
+
+Input: Mermaid (declaration selects the renderer), chart JSON (number array,
+mark, mark array, or {marks}), graph JSON (nodes/edges), or sequence/lane
+JSON with --kind sequence|lanes; --kind lanes also accepts git log text.
+Mixed graph/chart fields are rejected; author one valid spec.
+Explicit --kind selects a diagram parser; its schema still applies.
+--kind/--order do not override Mermaid declarations.
+Default: monochrome chat, 72 columns x 24 rows; JSON line, area and bar
+charts start compact (48 x 16). --size sets either input's cell budget:
+compact 48 x 16, wide 72 x 16, tall 48 x 24, full 72 x 24.
+Explicit --width/--height win per axis. Diagrams may grow taller.
+Terminal: output TTY minus margins, otherwise 80 x 24.
+Text goes to stdout; budget and diagnostics go to stderr. --json includes all pages.
+`);
       return;
     }
     budget = resolveBudget(options);
@@ -193,7 +212,7 @@ export async function runCli({ kind, render, repairHint, diagrams = false }) {
     process.stderr.write(`${JSON.stringify({
       error: error.message, code: error.code ?? 'GLYPH_SKILL_ERROR',
       hint: error.code === 'GLYPH_SKILL_UNFIT'
-        ? unfitHint(diagrams)
+        ? unfitHint((getKind?.() ?? kind) !== 'chart')
         : error.code ? repairHint?.(error.code) : undefined,
       ...(budget ? { budget } : {}), ...(result ? { report: result.report } : {}),
       ...(error.missingNodes ? { missingNodes: error.missingNodes, missingEdges: error.missingEdges } : {}),

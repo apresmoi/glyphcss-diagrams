@@ -1,6 +1,6 @@
 # Reporting an issue
 
-Use this when the renderer keeps failing on a reasonable input, or succeeds with visibly wrong output. Retry the recovery steps in SKILL.md first; a report should describe a real defect, not a first attempt.
+Use this when the renderer keeps failing on a reasonable input, or succeeds with visibly wrong output. Examples include lost or missing labels, broken axes, misdrawn values, crossings, false boxes and chopped words. Retry the recovery steps in SKILL.md first; a report should describe a real defect, not a first attempt.
 
 1. Draft the issue in the format below. Remove anything private from the input (names, hosts, keys, customer data) and replace it with neutral placeholders that still reproduce the problem; rerun to confirm.
 2. Show the full draft to the user and ask whether to file it. Never file without explicit approval.
@@ -40,7 +40,7 @@ node <skill-dir>/scripts/render.mjs - <every flag used>
 ```
 
 ## Environment
-- Skill: <glyphcss-diagrams or glyphcss-charts>
+- Skill: glyphcss-diagrams
 - Renderer: <first 12 characters of `shasum -a 256 <skill-dir>/scripts/render.mjs`>
 - Node: <`node --version`>
 - Target: <chat, terminal or web, and the width x height>

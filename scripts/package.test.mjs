@@ -16,8 +16,8 @@ test('README banner URLs change with the image content', () => {
   }
 });
 
-test('native manifests and Pi all discover the two shared skills', () => {
-  assert.match(validatePackage(), /3 plugin manifests, 3 marketplaces, 2 shared skills/);
+test('native manifests and Pi all discover one shared skill', () => {
+  assert.match(validatePackage(), /3 plugin manifests, 3 marketplaces, 1 shared skill/);
 });
 
 test('packaging validation rejects divergent versions and missing bundled renderers', t => {
@@ -35,6 +35,6 @@ test('packaging validation rejects divergent versions and missing bundled render
   writeFileSync(path, JSON.stringify(manifest));
   assert.throws(() => validatePackage(root), /Plugin versions must match/);
   writeFileSync(path, original);
-  rmSync(join(root, 'skills/glyphcss-charts/scripts/render.mjs'));
+  rmSync(join(root, 'skills/glyphcss-diagrams/scripts/render.mjs'));
   assert.throws(() => validatePackage(root), /ENOENT/);
 });

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ROOT, SKILLS } from './manage-skills.mjs';
@@ -42,15 +42,21 @@ export function validatePackage(root = ROOT) {
     }
   }
   assert.deepEqual(pkg.pi.skills, SKILLS.map(skill => `./skills/${skill}`));
+  assert.deepEqual(readdirSync(join(root, 'skills')).filter(name => name.startsWith('glyphcss-')).sort(), SKILLS);
   for (const skill of SKILLS) {
     const directory = join(root, 'skills', skill);
     const instruction = readFileSync(join(directory, 'SKILL.md'), 'utf8');
     assert.match(instruction, new RegExp(`^---\\nname: ${skill}\\n`));
     assert.match(instruction, /\ndescription: .+\n/);
+    assert.ok([...instruction].length <= 5000, 'SKILL.md must stay within 5,000 characters');
+    for (const reference of ['charts', 'diagrams', 'issues']) {
+      assert.ok(instruction.includes(`references/${reference}.md`));
+      assert.ok(readFileSync(join(directory, `references/${reference}.md`), 'utf8').length > 100);
+    }
     assert.ok(readFileSync(join(directory, 'scripts/render.mjs'), 'utf8').length > 1000);
     assert.ok(readFileSync(join(directory, 'scripts/NOTICE.txt'), 'utf8').length > 100);
   }
-  return `Validated ${pkg.name}@${pkg.version}: 3 plugin manifests, 3 marketplaces, 2 shared skills.`;
+  return `Validated ${pkg.name}@${pkg.version}: 3 plugin manifests, 3 marketplaces, 1 shared skill.`;
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
