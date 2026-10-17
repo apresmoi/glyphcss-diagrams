@@ -59,7 +59,7 @@
     "id": "history",
     "source": "history.mmd",
     "label": "Git history",
-    "description": "Feature branches, a hotfix and tagged releases.",
+    "description": "Glyphcss branching into charts and diagrams, with a hotfix and tagged releases.",
     "width": 60,
     "height": 24,
     "kind": "lanes"

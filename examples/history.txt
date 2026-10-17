@@ -1,16 +1,17 @@
-       *         init
-       ├─┬─────╮
-       │ *     │ api
-       │ ├─┬─╮ │
-       │ │ * │ │ login
-       │ │ * │ │ tokens  (feature/auth)
-       │ │ │ * │ index  (feature/search)
-       │ ├─╯ │ │
-       │ *   │ │ auth  (merge)
-       │ │   │ * patch  (hotfix)
-       ├─┼───┼─╯
-       * │   │   fix  (merge, tag: v1.0.1)
-       │ ├───╯
-       │ *       search  (develop, merge)
-       ├─╯
-       *         release  (main, merge, tag: v1.1.0)
+  *         Fork polycss
+  *         ASCII rasteriser
+  ├─┬─────╮
+  │ *     │ Cell canvas
+  │ ├─┬─╮ │
+  │ │ * │ │ Bars and lines
+  │ │ * │ │ Braille trends  (charts)
+  │ │ │ * │ Graph layout  (diagrams)
+  │ ├─╯ │ │
+  │ *   │ │ Charts  (merge)
+  │ │   │ * Font fallback  (hotfix)
+  ├─┼───┼─╯
+  * │   │   Fix fonts  (merge, tag: v0.2.1)
+  │ ├───╯
+  │ *       Diagrams  (develop, merge)
+  ├─╯
+  *         Charts + diagrams  (main, merge, tag: v0.3.0)

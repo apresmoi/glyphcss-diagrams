@@ -63,8 +63,8 @@ Describe a workflow, paste Mermaid, or hand your agent some data. It chooses a l
 <a href="examples/mindmap.mmd">Source</a> · <a href="examples/mindmap.txt">Plain text</a>
 </td>
 <td width="50%">
-<a href="assets/history.svg"><img src="assets/history.png" alt="Git history: Feature branches, a hotfix and tagged releases." width="640"></a><br>
-<strong>Git history</strong> — Feature branches, a hotfix and tagged releases.<br>
+<a href="assets/history.svg"><img src="assets/history.png" alt="Git history: Glyphcss branching into charts and diagrams, with a hotfix and tagged releases." width="640"></a><br>
+<strong>Git history</strong> — Glyphcss branching into charts and diagrams, with a hotfix and tagged releases.<br>
 <a href="examples/history.mmd">Source</a> · <a href="examples/history.txt">Plain text</a>
 </td>
 </tr>
