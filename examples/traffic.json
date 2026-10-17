@@ -1,18 +1,28 @@
 {
-  "title": "Task outcomes",
+  "title": "From visits to signups",
   "marks": [
     {
       "type": "sankey",
       "data": [
         {
-          "from": "Tasks",
-          "to": "Done",
-          "value": 12
+          "from": "Search",
+          "to": "Site",
+          "value": 48
         },
         {
-          "from": "Tasks",
-          "to": "Blocked",
-          "value": 4
+          "from": "Social",
+          "to": "Site",
+          "value": 24
+        },
+        {
+          "from": "Site",
+          "to": "Read",
+          "value": 54
+        },
+        {
+          "from": "Site",
+          "to": "Signup",
+          "value": 18
         }
       ],
       "channels": {

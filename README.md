@@ -87,8 +87,8 @@ Describe a workflow, paste Mermaid, or hand your agent some data. It chooses a l
 <a href="examples/pie.mmd">Source</a> · <a href="examples/pie.txt">Plain text</a>
 </td>
 <td width="50%">
-<a href="assets/flows.svg"><img src="assets/flows.png" alt="Sankey: Follow tasks to completed or blocked." width="640"></a><br>
-<strong>Sankey</strong> — Follow tasks to completed or blocked.<br>
+<a href="assets/flows.svg"><img src="assets/flows.png" alt="Sankey: Follow visits through the site to reads and signups." width="640"></a><br>
+<strong>Sankey</strong> — Follow visits through the site to reads and signups.<br>
 <a href="examples/traffic.json">Source</a> · <a href="examples/flows.txt">Plain text</a>
 </td>
 </tr>

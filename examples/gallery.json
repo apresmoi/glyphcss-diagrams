@@ -92,9 +92,9 @@
     "id": "flows",
     "source": "traffic.json",
     "label": "Sankey",
-    "description": "Follow tasks to completed or blocked.",
-    "width": 40,
-    "height": 10
+    "description": "Follow visits through the site to reads and signups.",
+    "width": 60,
+    "height": 14
   },
   {
     "id": "gantt",
