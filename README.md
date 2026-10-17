@@ -1,7 +1,7 @@
 <h1>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.png?v=6112c17f8938">
-    <img alt="An agent terminal: a user asks for weekly signups, and the agent replies with a Glyphcss braille chart directly in the conversation." src="assets/hero-light.png?v=809c426f1a94" width="1200">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.png?v=82cda4a20a20">
+    <img alt="An agent terminal: a user asks for weekly signups, and the agent replies with a Glyphcss braille chart directly in the conversation." src="assets/hero-light.png?v=02a7bc9c2055" width="1200">
   </picture>
 </h1>
 
@@ -183,7 +183,7 @@ npx skills add apresmoi/glyphcss-diagrams --global --skill glyphcss-diagrams
 
 ## Just ask
 
-> Plot weekly signups: 14, 22, 18, 31, 28, 44, 51, 47. Show the trend directly in chat.
+> Plot our weekly signups for the last two months. Show the trend directly in chat.
 
 > Draw our delivery workflow: push, run tests, ship if they pass, otherwise fix and retry.
 

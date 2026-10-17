@@ -91,7 +91,7 @@ for (const [theme, p] of Object.entries(palettes)) {
     + text('diagrams & charts, right in the conversation', 94, 137, 18, p.muted)
     + `<rect x="28" y="167" width="1144" height="89" rx="5" fill="${p.panel}"/>`
     + text('›', 44, 202, 26, p.ink, 'font-weight="700"')
-    + text(`Plot weekly signups: ${signups.join(', ')}.`, 80, 202, 23, p.ink)
+    + text('Plot our weekly signups for the last two months.', 80, 202, 23, p.ink)
     + text('Show the trend right here.', 80, 235, 23, p.ink)
     + text('•', 44, 300, 26, p.accent)
     + text("Here's the weekly trend:", 80, 300, 23, p.ink)
