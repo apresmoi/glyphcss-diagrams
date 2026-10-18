@@ -76,10 +76,7 @@ function card(item, x, y, width, height, p) {
 
 // The hero is a held frame of the showcase video: the user's question, the
 // skill call, then the trend render, all at one shared font size like a chat.
-const heroTrend = JSON.parse(spawnSync(process.execPath, [join(root, 'skills/glyphcss-diagrams/scripts/render.mjs'),
-  join(examples, rendered.get('trend').source), '--width', '48', '--height', '20', '--target', 'chat', '--json'],
-  { encoding: 'utf8', timeout: 30_000 }).stdout);
-assert.equal(heroTrend.pages.length, 1, 'hero trend must fit in one page');
+const heroTrend = rendered.get('trend');
 const heroVersions = {};
 const heroFont = 23.48, heroCell = heroFont * 0.6022, chatLeft = 161.7;
 

@@ -1,7 +1,7 @@
 <h1>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.png?v=72007b945b48">
-    <img alt="A chat: the user asks for a trend line, the agent loads the glyphcss-diagrams skill, and replies with a Glyphcss braille chart." src="assets/hero-light.png?v=c75eb2229199" width="1200">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.png?v=260e76ed625a">
+    <img alt="A chat: the user asks for a trend line, the agent loads the glyphcss-diagrams skill, and replies with a Glyphcss braille chart." src="assets/hero-light.png?v=ac8369923114" width="1200">
   </picture>
 </h1>
 
