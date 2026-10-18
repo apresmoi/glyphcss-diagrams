@@ -71,25 +71,6 @@ export function validatePackage(root = ROOT) {
   walk('');
   assert.deepEqual(links, [], `Plugin files must not be symbolic links: ${links.join(', ')}`);
   assert.deepEqual(oversized, [], `Plugin scripts and documents must stay under 256 KiB: ${oversized.join(', ')}`);
-  const walk = dir => {
-    for (const entry of readdirSync(join(root, dir), { withFileTypes: true })) {
-      if (['.git', 'node_modules'].includes(entry.name)) continue;
-      const path = dir ? `${dir}/${entry.name}` : entry.name;
-<<<<<<< HEAD
-      if (entry.isDirectory()) walk(path);
-      else if (entry.isFile() && !/\.(png|jpe?g|gif|webp|woff2?)$/i.test(entry.name) && statSync(join(root, path)).size >= 256 * 1024) oversized.push(path);
-    }
-  };
-  walk('');
-  assert.deepEqual(oversized, [], `Plugin scripts and documents must stay under 256 KiB: ${oversized.join(', ')}`);
-=======
-      if (entry.isSymbolicLink()) links.push(path);
-      else if (entry.isDirectory()) walk(path);
-    }
-  };
-  walk('');
-  assert.deepEqual(links, [], `Plugin files must not be symbolic links: ${links.join(', ')}`);
->>>>>>> origin/test/no-plugin-symlinks
   return `Validated ${pkg.name}@${pkg.version}: 3 plugin manifests, 3 marketplaces, 1 shared skill.`;
 }
 
