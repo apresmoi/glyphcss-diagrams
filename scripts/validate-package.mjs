@@ -56,6 +56,18 @@ export function validatePackage(root = ROOT) {
     assert.ok(readFileSync(join(directory, 'scripts/render.mjs'), 'utf8').length > 1000);
     assert.ok(readFileSync(join(directory, 'scripts/NOTICE.txt'), 'utf8').length > 100);
   }
+  // Plugin validators refuse symbolic links anywhere the loader reads; they are not followed.
+  const links = [];
+  const walk = dir => {
+    for (const entry of readdirSync(join(root, dir), { withFileTypes: true })) {
+      if (['.git', 'node_modules'].includes(entry.name)) continue;
+      const path = dir ? `${dir}/${entry.name}` : entry.name;
+      if (entry.isSymbolicLink()) links.push(path);
+      else if (entry.isDirectory()) walk(path);
+    }
+  };
+  walk('');
+  assert.deepEqual(links, [], `Plugin files must not be symbolic links: ${links.join(', ')}`);
   return `Validated ${pkg.name}@${pkg.version}: 3 plugin manifests, 3 marketplaces, 1 shared skill.`;
 }
 
