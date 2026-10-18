@@ -93,9 +93,14 @@ for (const [theme, p] of Object.entries(palettes)) {
     + text('›', 44, 202, 26, p.ink, 'font-weight="700"')
     + text('Plot our weekly signups for the last two months.', 80, 202, 23, p.ink)
     + text('Show the trend right here.', 80, 235, 23, p.ink)
-    + text('•', 44, 300, 26, p.accent)
-    + text("Here's the weekly trend:", 80, 300, 23, p.ink)
-    + grid(trend, 80, 321, 1040, 416, p, 26)
+    // ⏺ and ⎿ are drawn because the SVG font stack has no glyph for them.
+    + '<circle cx="50" cy="292" r="6" fill="' + p.accent + '"/>'
+    + text('Skill(glyphcss-diagrams)', 80, 300, 23, p.ink)
+    + `<path d="M84 314V325H94" fill="none" stroke="${p.muted}" stroke-width="1.6"/>`
+    + text('Successfully loaded skill', 108, 330, 21, p.muted)
+    + text('•', 44, 376, 26, p.accent)
+    + text("Here's the weekly trend:", 80, 376, 23, p.ink)
+    + grid(trend, 80, 397, 1040, 360, p, 26)
     + text(`From ${signups[0]} to ${signups.at(-1)} signups in ${signups.length} weeks.`, 80, 783, 21, p.ink)
     + `<line x1="28" y1="811" x2="1172" y2="811" stroke="${p.rule}"/>`
     + text('›', 44, 846, 26, p.accent, 'font-weight="700"')
