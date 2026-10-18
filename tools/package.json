@@ -1,0 +1,10 @@
+{
+  "name": "glyphcss-diagrams-tools",
+  "private": true,
+  "type": "module",
+  "description": "Development tooling for building the skill bundle and the gallery. Not part of the installed plugin's runtime.",
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "sharp": "^0.35.5"
+  }
+}

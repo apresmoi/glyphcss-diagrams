@@ -4,7 +4,9 @@ This repository owns the portable chat and terminal skill and its bundled render
 
 - Node.js 22 or newer.
 - `npm test` runs the portable tests on the committed bundles. It does not need the upstream checkout or installed packages.
-- `npm run build -- --source <glyphcss-checkout>` regenerates `skills/glyphcss-diagrams/scripts/render.mjs` and its `NOTICE.txt`. From a checkout nested inside glyphcss, use `--source ..`.
+- `npm run build -- --source <glyphcss-checkout>` regenerates `skills/glyphcss-diagrams/scripts/render.mjs`, its `lib/` chunks and `NOTICE.txt`. From a checkout nested inside glyphcss, use `--source ..`.
+- The repository root is the plugin root. Build and gallery tooling and their dependencies live in `tools/` (`npm run tools:install`); the root `package.json` has no dependencies and there is no root lockfile, so installing the plugin never runs npm.
+- Plugin directories read scripts and documents only up to 256 KiB, so the build splits the bundle into one chunk per package and fails on any chunk over that; `npm test` fails on any oversized non-image file.
 - A build without `--source` stops with instructions. It does not guess a parent directory layout.
 - Do not publish, tag, or register this package unless the user asks.
 
