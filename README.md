@@ -225,7 +225,7 @@ test -d glyphcss-source/.git || git clone https://github.com/apresmoi/glyphcss.g
 test -d glyphcss-diagrams/.git || git clone https://github.com/apresmoi/glyphcss-diagrams.git
 pnpm --dir glyphcss-source install --frozen-lockfile
 cd glyphcss-diagrams
-npm ci
+npm run tools:install
 npm run build -- --source ../glyphcss-source
 npm test
 npm run gallery

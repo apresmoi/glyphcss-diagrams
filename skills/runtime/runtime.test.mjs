@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFile, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { copyFile, cp, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -12,7 +12,9 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 let directory;
 before(async () => {
   directory = await mkdtemp(join(tmpdir(), 'glyphcss-skills-'));
+  // The bundle is the entrypoint plus its lib/ chunks; copy both, nothing else.
   await copyFile(join(root, 'skills/glyphcss-diagrams/scripts/render.mjs'), join(directory, 'render.mjs'));
+  await cp(join(root, 'skills/glyphcss-diagrams/scripts/lib'), join(directory, 'lib'), { recursive: true });
 });
 after(async () => { await rm(directory, { recursive: true, force: true }); });
 

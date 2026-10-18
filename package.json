@@ -6,17 +6,14 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "node skills/runtime/build.mjs",
+    "build": "node tools/build.mjs",
     "test": "npm run validate:package && node --test skills/runtime/runtime.test.mjs scripts/install.test.mjs scripts/package.test.mjs",
     "test:install": "node --test scripts/install.test.mjs scripts/package.test.mjs",
     "validate:package": "node scripts/validate-package.mjs",
     "install:skills": "node install.mjs",
     "uninstall:skills": "node uninstall.mjs",
-    "gallery": "node scripts/render-gallery.mjs"
-  },
-  "devDependencies": {
-    "esbuild": "^0.28.2",
-    "sharp": "^0.35.5"
+    "gallery": "node tools/render-gallery.mjs",
+    "tools:install": "npm ci --prefix tools"
   },
   "license": "MIT",
   "version": "0.1.0",

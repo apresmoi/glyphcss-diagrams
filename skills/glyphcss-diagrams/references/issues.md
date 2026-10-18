@@ -41,7 +41,7 @@ node <skill-dir>/scripts/render.mjs - <every flag used>
 
 ## Environment
 - Skill: glyphcss-diagrams
-- Renderer: <first 12 characters of `shasum -a 256 <skill-dir>/scripts/render.mjs`>
+- Renderer: <first 12 characters of `cat <skill-dir>/scripts/render.mjs <skill-dir>/scripts/lib/*.mjs | shasum -a 256`>
 - Node: <`node --version`>
 - Target: <chat, terminal or web, and the width x height>
 - Agent: <the host agent and model, if known>
