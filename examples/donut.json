@@ -1,0 +1,14 @@
+{
+  "title": "Agent time (minutes)",
+  "legend": false,
+  "marks": [{
+    "type": "arc",
+    "data": [
+      { "label": "Build", "minutes": 30 },
+      { "label": "Review", "minutes": 20 },
+      { "label": "Test", "minutes": 10 }
+    ],
+    "channels": { "y": "minutes", "fill": "label" },
+    "options": { "innerRadius": 0.5, "labels": "callout" }
+  }]
+}

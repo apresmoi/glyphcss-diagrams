@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
@@ -74,47 +73,6 @@ function card(item, x, y, width, height, p) {
     + text(`examples/${item.source}`, x + 26, y + height - 27, 12, p.muted);
 }
 
-const trend = rendered.get('trend');
-const signups = JSON.parse(await readFile(join(examples, trend.source), 'utf8'))
-  .marks[0].data.map(row => row.signups);
-const heroVersions = {};
-
-for (const [theme, p] of Object.entries(palettes)) {
-  const hero = svg(1200, 864, 'Glyphcss diagrams & charts in an agent terminal',
-    `<rect x="1" y="1" width="1198" height="862" rx="16" fill="${p.bg}" stroke="${p.rule}" stroke-width="2"/>`
-    + `<path d="M17 2h1166a15 15 0 0 1 15 15v35H2V17A15 15 0 0 1 17 2Z" fill="${p.panel}"/>`
-    + '<circle cx="30" cy="27" r="6" fill="#ff5f57"/><circle cx="52" cy="27" r="6" fill="#febc2e"/><circle cx="74" cy="27" r="6" fill="#28c840"/>'
-    + text('agent session / glyphcss-diagrams', 600, 33, 15, p.muted, 'text-anchor="middle"')
-    + `<line x1="2" y1="52" x2="1198" y2="52" stroke="${p.rule}"/>`
-    + text('>_', 40, 105, 30, p.accent, 'font-weight="700"')
-    + text('glyphcss', 94, 105, 30, p.ink, 'font-weight="700"')
-    + text('diagrams & charts, right in the conversation', 94, 137, 18, p.muted)
-    + `<rect x="28" y="167" width="1144" height="89" rx="5" fill="${p.panel}"/>`
-    + text('›', 44, 202, 26, p.ink, 'font-weight="700"')
-    + text('Plot our weekly signups for the last two months.', 80, 202, 23, p.ink)
-    + text('Show the trend right here.', 80, 235, 23, p.ink)
-    // ⏺ and ⎿ are drawn because the SVG font stack has no glyph for them.
-    + '<circle cx="50" cy="292" r="6" fill="' + p.accent + '"/>'
-    + text('Skill(glyphcss-diagrams)', 80, 300, 23, p.ink)
-    + `<path d="M84 314V325H94" fill="none" stroke="${p.muted}" stroke-width="1.6"/>`
-    + text('Successfully loaded skill', 108, 330, 21, p.muted)
-    + text('•', 44, 376, 26, p.accent)
-    + text("Here's the weekly trend:", 80, 376, 23, p.ink)
-    + grid(trend, 80, 397, 1040, 360, p, 26)
-    + text(`From ${signups[0]} to ${signups.at(-1)} signups in ${signups.length} weeks.`, 80, 783, 21, p.ink)
-    + `<line x1="28" y1="811" x2="1172" y2="811" stroke="${p.rule}"/>`
-    + text('›', 44, 846, 26, p.accent, 'font-weight="700"')
-    + `<rect x="80" y="826" width="12" height="24" fill="${p.muted}"/>`
-    + text('Ask for a chart or diagram', 108, 845, 18, p.muted)
-    + text('powered by glyphcss', 1156, 845, 14, p.muted, 'text-anchor="end"'),
-    `Illustrative agent conversation: a user asks for weekly signups, and the agent replies with actual braille chart output from the bundled Glyphcss renderer. Example data.\n\n${trend.text}`);
-  await writeFile(join(assets, `hero-${theme}.svg`), hero);
-  const png = await sharp(Buffer.from(hero)).png().toBuffer();
-  await writeFile(join(assets, `hero-${theme}.png`), png);
-  heroVersions[theme] = createHash('sha256').update(png).digest('hex').slice(0, 12);
-}
-
-// A changed image needs a new URL to bypass cached README banners.
 const readmePath = join(root, 'README.md');
 const readme = await readFile(readmePath, 'utf8');
 const tiles = [...rendered.values()].map(item => `<td width="50%">
@@ -126,10 +84,7 @@ const rows = [];
 for (let i = 0; i < tiles.length; i += 2) rows.push(`<tr>\n${tiles.slice(i, i + 2).join('\n')}\n</tr>`);
 const gallery = `<!-- gallery:start -->\n<table>\n${rows.join('\n')}\n</table>\n<!-- gallery:end -->`;
 assert.match(readme, /<!-- gallery:start -->[\s\S]*?<!-- gallery:end -->/, 'README needs gallery markers');
-await writeFile(readmePath, readme.replace(
-  /assets\/hero-(dark|light)\.png(?:\?v=[a-f0-9]+)?/g,
-  (_, theme) => `assets/hero-${theme}.png?v=${heroVersions[theme]}`,
-).replace(/<!-- gallery:start -->[\s\S]*?<!-- gallery:end -->/, gallery));
+await writeFile(readmePath, readme.replace(/<!-- gallery:start -->[\s\S]*?<!-- gallery:end -->/, gallery));
 
 for (const item of rendered.values()) {
   const p = palettes.dark;
@@ -143,4 +98,4 @@ const icon = svg(256, 256, 'Glyphcss', '<rect width="256" height="256" rx="44" f
   + '<path d="M169 106h19V70h19v83h19v-47" fill="none" stroke="#38bdf8" stroke-width="8" stroke-linejoin="miter"/>');
 await writeFile(join(assets, 'icon.svg'), icon);
 await sharp(Buffer.from(icon)).png().toFile(join(assets, 'icon.png'));
-console.log(`Gallery complete: ${rendered.size} real renders, dark/light heroes, and plugin icon.`);
+console.log(`Gallery complete: ${rendered.size} real renders and plugin icon.`);
