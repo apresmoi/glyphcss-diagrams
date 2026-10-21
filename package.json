@@ -13,6 +13,7 @@
     "install:skills": "node install.mjs",
     "uninstall:skills": "node uninstall.mjs",
     "gallery": "node tools/render-gallery.mjs",
+    "hero": "node tools/render-hero.mjs",
     "tools:install": "npm ci --prefix tools"
   },
   "license": "MIT",

@@ -11,7 +11,7 @@ import { validatePackage } from './validate-package.mjs';
 test('README banner URLs change with the image content', () => {
   const readme = readFileSync(join(ROOT, 'README.md'), 'utf8');
   for (const theme of ['dark', 'light']) {
-    const asset = `assets/hero-${theme}.png`;
+    const asset = `assets/hero-${theme}.webp`;
     const hash = createHash('sha256').update(readFileSync(join(ROOT, asset))).digest('hex').slice(0, 12);
     assert.ok(readme.includes(`="${asset}?v=${hash}"`), `${theme} banner needs its current content hash in the README URL`);
   }
@@ -102,11 +102,3 @@ test('gallery tiles centre their inked cells in the drawing area', () => {
   }
 });
 
-test('both hero charts preserve the same monochrome trend output', () => {
-  const plain = readFileSync(join(ROOT, 'examples/trend.txt'), 'utf8').slice(0, -1);
-  for (const [theme, ink] of [['dark', '#ffe8b8'], ['light', '#162b3c']]) {
-    const rows = imageRows(readFileSync(join(ROOT, `assets/hero-${theme}.svg`), 'utf8'));
-    assert.equal(rows.map(row => row.text).join('\n'), plain);
-    assert.ok(rows.every(row => row.inks.every(cellInk => cellInk === ink)), `${theme} hero chart must use one ink color`);
-  }
-});

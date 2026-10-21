@@ -18,4 +18,4 @@ This repository owns the portable chat and terminal skill and its bundled render
 - Install and uninstall inspect current and retired destinations before mutation. Refuse unrelated files/links/directories, modified copies, and install-mode changes without uninstalling first. Copy ownership receipts cover all files and directories, independent of locale or record order.
 - Install creates one skill. Uninstall also removes verified owned retired chart installs; installation refuses them until uninstall. Unrelated or modified retired targets block before mutation.
 - Installer tests use temporary destinations and execute the installed renderers. Native provider checks must use isolated configuration directories, never a contributor's real global installation.
-- `npm test` includes packaging and installer tests. `npm run gallery` rebuilds documentation images; development dependencies are not runtime requirements.
+- `npm test` includes packaging and installer tests. `npm run gallery` rebuilds documentation images and `npm run hero` the animated README hero (needs `img2webp` from libwebp); development dependencies are not runtime requirements.
