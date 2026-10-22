@@ -6,7 +6,7 @@
     "name": "apresmoi",
     "url": "https://github.com/apresmoi"
   },
-  "homepage": "https://github.com/apresmoi/glyphcss-diagrams",
+  "homepage": "https://glyphcss.com/diagrams/",
   "repository": "https://github.com/apresmoi/glyphcss-diagrams",
   "license": "MIT",
   "keywords": [
@@ -28,7 +28,7 @@
       "Read",
       "Write"
     ],
-    "websiteURL": "https://github.com/apresmoi/glyphcss-diagrams",
+    "websiteURL": "https://glyphcss.com/diagrams/",
     "defaultPrompt": [
       "Draw this workflow directly in chat.",
       "Chart these values and explain the trend."
