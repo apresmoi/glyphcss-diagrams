@@ -1,12 +1,41 @@
-<h1>
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.webp?v=50a695587f04">
-    <img alt="An agent terminal: a user asks for a chart, the glyphcss-diagrams skill loads, and a flowchart, trend line, donut chart, mind map, Sankey, state diagram and git graph stream into the conversation as text." src="assets/hero-light.webp?v=70be986118a3" width="1200">
-  </picture>
-</h1>
+<h1>glyphcss-diagrams</h1>
+
+Render charts and diagrams as aligned text directly in your agent's chat or terminal.
+
+[Docs](https://glyphcss.com/introduction/) · [Diagram workbench](https://glyphcss.com/diagrams/) · [Chart workbench](https://glyphcss.com/charts/)
+
+## Install
+
+Choose one route per host. Rendering requires **Node.js 22+**, with no dependency installation or API key. Start a new agent session after installing.
+
+### Claude Code
+
+```sh
+claude plugin marketplace add apresmoi/glyphcss-diagrams
+claude plugin install glyphcss-diagrams@glyphcss-diagrams
+```
+
+### Codex
+
+```sh
+codex plugin marketplace add apresmoi/glyphcss-diagrams
+codex plugin add glyphcss-diagrams@glyphcss-diagrams
+```
+
+### Any agent (skills CLI)
+
+```sh
+npx skills add apresmoi/glyphcss-diagrams
+```
+
+Select the skill and your hosts. The [skills CLI](https://skills.sh) installs a standalone skill for supported agents. For clients without a plugin CLI, use the [portable installer](#portable-installer).
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.webp?v=50a695587f04">
+  <img alt="An agent terminal: a user asks for a chart, the glyphcss-diagrams skill loads, and a flowchart, trend line, donut chart, mind map, Sankey, state diagram and git graph stream into the conversation as text." src="assets/hero-light.webp?v=70be986118a3" width="1200">
+</picture>
 
 <p align="center">
-  <strong>One agent skill for charts and diagrams, directly in chat or your terminal.</strong><br>
   <a href="#install">Install</a> · <a href="#what-it-renders">Gallery</a> · <a href="#just-ask">Example prompts</a> · <a href="docs/installation.md">All providers</a> · <a href="LICENSE">MIT license</a>
 </p>
 
@@ -14,7 +43,7 @@
 
 Describe a workflow, paste Mermaid, or hand your agent some data. It chooses a layout, runs the renderer, and puts the resulting text in its reply. Trend lines use braille; diagrams use box characters. The same output works in a terminal, a code review, or a conversation.
 
-**Node.js 22+** · **Claude Code + Codex plugins** · **Portable Agent Skills** · **MIT**
+**Node.js 22+** · **Claude Code, Codex, Copilot CLI, and Factory Droid plugins** · **Pi package** · **Portable Agent Skills** · **MIT**
 
 ## What it renders
 
@@ -127,29 +156,9 @@ Every preview is generated from its linked source by the bundled renderer. The e
 |---|---|---|
 | [glyphcss-diagrams](skills/glyphcss-diagrams/SKILL.md) | Mermaid, chart/graph/sequence JSON, Git log | Charts, transforms, scales, axes, node shapes, groups, labeled edges, sequence frames, lane histories |
 
-## Install
+## More installation options
 
-Choose one route for each agent. Each route installs the same skill, including its self-contained renderer. **Rendering needs Node.js 22+; it needs no package installation or API key.** Start a new agent session after installing.
-
-### Claude Code
-
-```sh
-claude plugin marketplace add apresmoi/glyphcss-diagrams
-claude plugin install glyphcss-diagrams@glyphcss-diagrams
-```
-
-Inside Claude Code, the equivalents are `/plugin marketplace add` and `/plugin install`. The skill is included in the plugin.
-
-### Codex
-
-```sh
-codex plugin marketplace add apresmoi/glyphcss-diagrams
-codex plugin add glyphcss-diagrams@glyphcss-diagrams
-```
-
-For clients without the plugin CLI, use the standalone installer below.
-
-### Standalone skills and editable installs
+### Portable installer
 
 Clone once, then link the skill to the providers you use. These commands install for Claude Code and Codex:
 
@@ -162,12 +171,6 @@ node install.mjs --provider codex
 
 The installer is dependency-free and safe to rerun. It preserves unrelated installations. Use `--copy` for independent copies, or `--dest /path/to/skills` for a custom host. [Provider paths, updates, and removal](docs/installation.md#grok-antigravity-cursor-opencode-and-editable-installs).
 
-For the cross-agent installer:
-
-```sh
-npx skills add apresmoi/glyphcss-diagrams --global --skill glyphcss-diagrams
-```
-
 ### More providers
 
 | Provider | Setup |
@@ -179,7 +182,7 @@ npx skills add apresmoi/glyphcss-diagrams --global --skill glyphcss-diagrams
 | Antigravity CLI / IDE | [Separate provider targets](docs/installation.md#grok-antigravity-cursor-opencode-and-editable-installs) |
 | Cursor / OpenCode | [Standalone installer](docs/installation.md#grok-antigravity-cursor-opencode-and-editable-installs) |
 | Kiro | [Import the skill folder](docs/installation.md#kiro) |
-| Other Agent Skills hosts | [Cross-agent installer or a custom skills directory](docs/installation.md#other-agent-skills-hosts) |
+| Other Agent Skills hosts | [Cross-agent installer or a custom skills directory](docs/installation.md#any-agent-skills-cli) |
 
 ## Just ask
 

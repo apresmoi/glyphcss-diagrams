@@ -21,7 +21,7 @@ test('native manifests and Pi all discover one shared skill', () => {
   assert.match(validatePackage(), /3 plugin manifests, 3 marketplaces, 1 shared skill/);
 });
 
-test('packaging validation rejects divergent versions and missing bundled renderers', t => {
+test('packaging validation rejects divergent versions, oversized descriptions and missing bundled renderers', t => {
   const root = mkdtempSync(join(tmpdir(), 'glyphcss-package-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   for (const name of ['package.json', '.claude-plugin', '.codex-plugin', '.factory-plugin', '.agents', 'assets']) {
@@ -36,6 +36,13 @@ test('packaging validation rejects divergent versions and missing bundled render
   writeFileSync(path, JSON.stringify(manifest));
   assert.throws(() => validatePackage(root), /Plugin versions must match/);
   writeFileSync(path, original);
+  const skillPath = join(root, 'skills/glyphcss-diagrams/SKILL.md');
+  const instruction = readFileSync(skillPath, 'utf8');
+  writeFileSync(skillPath, instruction.replace(/\ndescription: .+\n/, `\ndescription: ${'x'.repeat(1025)}\n`));
+  assert.throws(() => validatePackage(root), /Skill description must stay within 1,024 characters/);
+  writeFileSync(skillPath, instruction.replace(/\ndescription: .+\n/, '\ndescription: Use for flows: pipelines and charts\n'));
+  assert.throws(() => validatePackage(root), /must be single-quoted/);
+  writeFileSync(skillPath, instruction);
   rmSync(join(root, 'skills/glyphcss-diagrams/scripts/render.mjs'));
   assert.throws(() => validatePackage(root), /ENOENT/);
 });

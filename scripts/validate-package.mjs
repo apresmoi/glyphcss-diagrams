@@ -16,11 +16,12 @@ export function validatePackage(root = ROOT) {
     assert.equal(manifest.license, 'MIT');
     assert.deepEqual(manifest.author, { name: 'apresmoi', url: 'https://github.com/apresmoi' });
     assert.equal(manifest.repository, 'https://github.com/apresmoi/glyphcss-diagrams');
-    assert.equal(manifest.homepage, 'https://github.com/apresmoi/glyphcss-diagrams');
+    assert.equal(manifest.homepage, 'https://glyphcss.com/diagrams/');
     assert.equal(manifest.description, pkg.description);
   }
   const codex = manifests[1];
   assert.equal(codex.skills, './skills/');
+  assert.equal(codex.interface.websiteURL, 'https://glyphcss.com/diagrams/');
   assert.equal(codex.interface.displayName, 'Glyphcss diagrams & charts');
   for (const path of [codex.interface.logo, codex.interface.composerIcon]) {
     assert.equal(path, './assets/icon.png');
@@ -47,7 +48,14 @@ export function validatePackage(root = ROOT) {
     const directory = join(root, 'skills', skill);
     const instruction = readFileSync(join(directory, 'SKILL.md'), 'utf8');
     assert.match(instruction, new RegExp(`^---\\nname: ${skill}\\n`));
-    assert.match(instruction, /\ndescription: .+\n/);
+    const description = instruction.match(/\ndescription: (.+)\n/);
+    assert.ok(description, 'SKILL.md must have a description');
+    // Strict YAML loaders (the skills.sh CLI) reject a plain scalar containing ': ' or ' #',
+    // and then skip the skill entirely; a single-quoted scalar parses everywhere.
+    const quoted = description[1].match(/^'((?:[^']|'')*)'$/);
+    assert.ok(quoted || !/: | #/.test(description[1]), 'Skill description must be single-quoted when it contains ": " or " #"');
+    const text = quoted ? quoted[1].replaceAll("''", "'") : description[1];
+    assert.ok([...text].length <= 1024, 'Skill description must stay within 1,024 characters');
     assert.ok([...instruction].length <= 5000, 'SKILL.md must stay within 5,000 characters');
     for (const reference of ['charts', 'diagrams', 'issues']) {
       assert.ok(instruction.includes(`references/${reference}.md`));

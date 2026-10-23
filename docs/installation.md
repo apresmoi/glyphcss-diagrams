@@ -28,6 +28,16 @@ codex plugin list --marketplace glyphcss-diagrams
 
 The catalog is `.agents/plugins/marketplace.json`, and `.codex-plugin/plugin.json` points to `./skills/`. In supported desktop clients, the same marketplace appears in the plugin directory. Older clients without these CLI commands can use the standalone installer below. See [OpenAI's plugin packaging documentation](https://developers.openai.com/plugins/build/plugins).
 
+## Any agent (skills CLI)
+
+The cross-agent skills CLI discovers the skill folder and lets you select the hosts to install into:
+
+```sh
+npx skills add apresmoi/glyphcss-diagrams
+```
+
+Select the skill and the hosts you use, such as Cline, Amp, Gemini CLI, Windsurf, Zed, Warp, Roo, or Kilo. This route depends on the current [skills CLI](https://skills.sh) host support; it is a standalone skill installation, not a native plugin for every provider.
+
 ## GitHub Copilot CLI
 
 Copilot reads the Claude-compatible marketplace and the same skills:
@@ -76,7 +86,7 @@ Kiro's skill importer copies the skill contents into its workspace or global ski
 The dependency-free installer links the skill from a local checkout. Choose a single provider in the last command; this example installs for Grok:
 
 ```sh
-git clone https://github.com/apresmoi/glyphcss-diagrams.git
+test -d glyphcss-diagrams/.git || git clone https://github.com/apresmoi/glyphcss-diagrams.git
 cd glyphcss-diagrams
 node install.mjs --provider grok
 ```
@@ -100,16 +110,6 @@ The installer requires an explicit destination and checks the current and retire
 
 To remove a standalone installation, run `node uninstall.mjs --provider NAME` or `node uninstall.mjs --dest DIRECTORY` from this checkout. Only links to this checkout and unchanged copies carrying its receipt are removed. An owned retired `glyphcss-charts` link (even dangling) or unchanged receipt-owned copy is also removed. Installing with a retired folder present stops and instructs you to uninstall first. Unrelated or modified retired folders stop both actions before any mutation; move them aside yourself. Other skills stay intact. These scripts do not edit host configuration files or manage native plugin installations.
 
-## Other Agent Skills hosts
-
-The cross-agent skills CLI discovers the skill folder and lets you select the hosts to install into:
-
-```sh
-npx skills add apresmoi/glyphcss-diagrams
-```
-
-Select the skill and the hosts you use, such as Cline, Amp, Gemini CLI, Windsurf, Zed, Warp, Roo, or Kilo. This route depends on the current [skills CLI](https://skills.sh) host support; it is a standalone skill installation, not a native plugin for every provider.
-
 ## Updates and local checks
 
 - Native plugins: use the host's marketplace refresh and plugin update commands. Codex can refresh this source with `codex plugin marketplace upgrade glyphcss-diagrams`; start a new session afterward.
@@ -120,7 +120,7 @@ Select the skill and the hosts you use, such as Cline, Amp, Gemini CLI, Windsurf
 For a local native package check, clone the repository and validate its manifests:
 
 ```sh
-git clone https://github.com/apresmoi/glyphcss-diagrams.git
+test -d glyphcss-diagrams/.git || git clone https://github.com/apresmoi/glyphcss-diagrams.git
 cd glyphcss-diagrams
 node scripts/validate-package.mjs
 claude plugin validate .claude-plugin/plugin.json --strict

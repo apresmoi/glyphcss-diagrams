@@ -10,7 +10,17 @@
   "plugins": [
     {
       "name": "glyphcss-diagrams",
-      "source": "./"
+      "source": "./",
+      "description": "Render charts, flowcharts, sequences, and branching histories as readable text directly in chat or a terminal.",
+      "category": "productivity",
+      "tags": [
+        "charts",
+        "diagrams",
+        "mermaid",
+        "ascii",
+        "terminal",
+        "visualization"
+      ]
     }
   ]
 }
